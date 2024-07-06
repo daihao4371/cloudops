@@ -3,10 +3,11 @@ package common
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"os"
 )
 
-func NewZaplogger(logLevel string) *zap.Logger {
+func NewZaplogger(logLevel, LogPath, ErrLogPath string) *zap.Logger {
 	// 日志级别
 	atomicLevel := zap.NewAtomicLevel()
 	switch logLevel {
@@ -61,9 +62,50 @@ func NewZaplogger(logLevel string) *zap.Logger {
 		zapcore.DebugLevel, // 日志级别
 	)
 
-	// 打印文件日志的core
+	// 标准日志轮转
+	writer := &lumberjack.Logger{
+		Filename:   LogPath, // 日志文件路径
+		MaxSize:    1,       // 每个日志文件的最大大小（单位：M）
+		MaxBackups: 30,      // 日志文件最多保存多少个备份
+		MaxAge:     7,       // 文件最多保存多少天
+		LocalTime:  true,    // 开启本地时间
+		Compress:   true,    // 开启压缩
+	}
+
+	// 写入日志文件用的CoreFile
+	zapCoreFile := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig), // 编码器配置
+		zapcore.AddSync(writer),               // 输出到文件
+		atomicLevel,                           // 日志级别
+
+	)
+
+	// 错误日志轮转
+	errorWriter := &lumberjack.Logger{
+		Filename:   ErrLogPath, // 日志文件路径
+		MaxSize:    100,        // 每个日志文件的最大大小（单位：M）
+		MaxBackups: 30,         // 日志文件最多保存多少个备份
+		MaxAge:     7,          // 文件最多保存多少天
+		LocalTime:  true,       // 开启本地时间
+		Compress:   true,       // 开启压缩
+	}
+
+	// 写入日志文件和终端的zapCore.Core
+	zapCoreError := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig), // 编码器配置
+		zapcore.AddSync(errorWriter),          // 输出到文件
+		zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+			return lvl >= zapcore.ErrorLevel // 只允许ERROR级别以上的日志输出到文件
+		}), // 日志级别
+	)
+
+	//  合并coreFile和console
 	core := zapcore.NewTee(
-		zapCoreConsole)
+		zapCoreFile,    // 文件输出Core
+		zapCoreConsole, // 终端输出终端控制台
+		zapCoreError,   // 文件输出错误日志
+	)
 
 	return zap.New(core, zap.AddCaller())
+
 }

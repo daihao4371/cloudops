@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"log"
-	"time"
 )
 
 func main() {
@@ -26,18 +25,14 @@ func main() {
 		log.Fatalf("加载主配置文件失败： %v", err)
 		return
 	}
-	logger := common.NewZaplogger(sc.LogLevel)
+	logger := common.NewZaplogger(sc.LogLevel, sc.LogPath, sc.ErrLogPath)
 	defer logger.Sync()
-	logger = common.NewZaplogger("DEBUG")
-	logger.Info("failed to fetch URL",
-		zap.String("url", "logger.Info"),
-		zap.Int("attempt", 3),
-		zap.Duration("backoff", time.Second),
-	)
 
 	logger.Debug("这是一条测试debug日志",
 		zap.String("级别", sc.LogLevel),
 	)
+
+	logger.Error("这是一条测试error日志")
 
 	fmt.Printf("主配置文件路径：%#v sc:%#v\n", configFile, sc)
 	//log.Printf("主配置文件路径： %v  sc:%#v\n", configFile, sc)
