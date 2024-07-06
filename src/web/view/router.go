@@ -14,6 +14,7 @@ func ConfigRouter(r *gin.Engine) {
 		base.GET("/ping", ping)
 		base.GET("/now", getNowTs)
 		//base.GET("/long", longRequest)
+		base.POST("/login", UserLogin)
 
 	}
 }

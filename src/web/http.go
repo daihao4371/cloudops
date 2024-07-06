@@ -5,6 +5,7 @@ import (
 	"cloudops/src/config"
 	"cloudops/src/web/middleware"
 	"cloudops/src/web/view"
+	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -14,7 +15,7 @@ import (
 // 设置中间件
 func StartGIn(sc *config.ServeConfig) error {
 	// 初始化引擎
-	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
 	// 把logger插入
@@ -22,8 +23,21 @@ func StartGIn(sc *config.ServeConfig) error {
 	//varMap[common.GIN_CTX_CONFIG_LOGGER] = sc.Logger
 	varMap[common.GIN_CTX_CONFIG_CONFIG] = sc
 
-	// 添加中间件 打印请求耗时
-	r.Use(middleware.TimeCost())
+	/*	// 添加中间件 打印请求耗时
+		r.Use(middleware.TimeCost())*/
+
+	// 添加中间件 打印请求ID
+	r.Use(requestid.New())
+	// 记录requesID 请求body header中的token
+	r.Use(middleware.NewGinZapLogger(sc.Logger))
+
+	/*	// 暴露metrics
+		p := ginprometheus.NewPrometheus("cloudops")
+		p.Use(r)*/
+
+	// 添加中间件 日志记录
+	//r.Use(ginzap.Ginzap(sc.Logger, time.RFC3339, false))
+
 	// 传递变量
 	r.Use(middleware.ConfigMiddleware(varMap))
 

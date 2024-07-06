@@ -5,3 +5,9 @@
 {"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 10:02:46.263","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
 {"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 10:30:58.929","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
 {"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 10:31:51.904","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 10:45:51.029","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 11:09:39.596","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 11:30:43.403","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 14:13:28.329","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 14:19:03.993","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 14:29:00.069","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}

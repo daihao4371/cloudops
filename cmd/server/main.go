@@ -6,7 +6,6 @@ import (
 	"cloudops/src/web"
 	"flag"
 	"fmt"
-	"go.uber.org/zap"
 	"log"
 )
 
@@ -28,12 +27,12 @@ func main() {
 	logger := common.NewZaplogger(sc.LogLevel, sc.LogPath, sc.ErrLogPath)
 	defer logger.Sync()
 
-	logger.Debug("这是一条测试debug日志",
-		zap.String("级别", sc.LogLevel),
-	)
+	/*	logger.Debug("这是一条测试debug日志",
+			zap.String("级别", sc.LogLevel),
+		)
 
-	logger.Error("这是一条测试error日志")
-
+		logger.Error("这是一条测试error日志")
+	*/
 	// 把logger设置到config中
 	sc.Logger = logger
 
