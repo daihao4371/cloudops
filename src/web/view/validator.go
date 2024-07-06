@@ -12,6 +12,6 @@ var (
 	chinese  = zh.New()                // 获取中文翻译器
 	uni      = ut.New(chinese)         // 设置成中文翻译器
 	trans, _ = uni.GetTranslator("zh") // 获取翻译字典
-	// 注册翻译器
+	// 注册中文翻译器
 	_ = zhs.RegisterDefaultTranslations(validate, trans)
 )

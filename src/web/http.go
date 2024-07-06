@@ -16,7 +16,9 @@ import (
 func StartGIn(sc *config.ServeConfig) error {
 	// 初始化引擎
 	//gin.SetMode(gin.ReleaseMode)
-	r := gin.Default()
+	//r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
 
 	// 把logger插入
 	varMap := map[string]interface{}{}

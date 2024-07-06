@@ -37,7 +37,7 @@ func OkWithMessage(message string, c *gin.Context) {
 }
 
 func OkWithData(data interface{}, c *gin.Context) {
-	Result(SUCESS, data, "select sucess", c)
+	Result(SUCESS, data, "Search successful", c)
 }
 
 func Fail(c *gin.Context) {
