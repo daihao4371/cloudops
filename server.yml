@@ -1,4 +1,9 @@
 http_addr: 0.0.0.0:8080
-log_level: DEBUG
 log_path: ./logs/cloudops.log
 err_log_path: ./logs/cloudops-err.log
+log_level: DEBUG
+jwt:
+  singing_key: cloudoops # 密码
+  expire_time: 5m  # 过期时间
+  buffer_time: 1d  # 缓冲时间
+  issuer: cloudoops # 签发人

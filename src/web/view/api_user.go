@@ -37,4 +37,9 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 	common.OkWithData(user, c)
+	dbUser := &models.User{
+		Username: user.Username,
+		Password: user.Password,
+	}
+	models.TokenNext(dbUser, c)
 }

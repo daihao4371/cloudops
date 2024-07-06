@@ -40,6 +40,10 @@ func OkWithData(data interface{}, c *gin.Context) {
 	Result(SUCESS, data, "Search successful", c)
 }
 
+func OkWithDetailed(data interface{}, message string, c *gin.Context) {
+	Result(SUCESS, data, message, c)
+}
+
 func Fail(c *gin.Context) {
 	Result(ERROR, map[string]interface{}{}, "operate failed", c)
 }
