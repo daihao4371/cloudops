@@ -1,0 +1,2 @@
+{"time":"2024-07-06 09:35:51.849","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
+{"level":"\u001b[31merror\u001b[0m","time":"2024-07-06 09:36:40.389","caller":"server/main.go:35","func":"main.main","message":"这是一条测试error日志"}
