@@ -55,3 +55,4 @@
 {"level":"error","time":"2024-07-07 10:59:03.832","line":"/Users/daihao/Downloads/gocode/cloudops/src/models/request_jwt.go:56","func":"cloudops/src/models.ParseToken","msg":"Failed to parse token","error":"token has invalid claims: token is expired"}
 {"level":"error","time":"2024-07-07 11:01:36.294","line":"/Users/daihao/Downloads/gocode/cloudops/src/models/request_jwt.go:56","func":"cloudops/src/models.ParseToken","msg":"Failed to parse token","error":"token has invalid claims: token is expired"}
 {"level":"error","time":"2024-07-07 11:04:21.355","line":"/Users/daihao/Downloads/gocode/cloudops/src/models/request_jwt.go:56","func":"cloudops/src/models.ParseToken","msg":"Failed to parse token","error":"token has invalid claims: token is expired"}
+{"level":"error","time":"2024-07-07 15:17:46.549","line":"/Users/daihao/Downloads/gocode/cloudops/cmd/server/main.go:36","func":"main.main","msg":"InitDb failed","err":"Error 1049 (42000): Unknown database 'cloudoops'"}

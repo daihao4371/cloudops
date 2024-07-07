@@ -7,3 +7,31 @@ jwt:
   expire_time: 1m  # 有效时间
   buffer_time: 30s  # 临期时间
   issuer: cloudoops # 签发人
+
+mysql:
+  dsn: root:123456@tcp(127.0.0.1:3306)/cloudoops?charset=utf8&parseTime=True&loc=Local
+
+
+#`
+#  数据库相关配置和 SQL 语句
+#  使用以下 SQL 语句创建数据库和授权用户
+#  创建数据库
+#  CREATE DATABASE IF NOT EXISTS cloudoops DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+#  授予所有权限给 root 用户
+#  GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;
+#  刷新权限
+#  FLUSH PRIVILEGES;
+#  使用以下方式连接 MySQL 并更改 root 用户密码
+#  mysql -uroot -p123456 -h127.0.0.1 -P30016
+#
+#  另外一种创建和授权方式：
+#  #删除数据库（如果存在）
+#  #DROP DATABASE cloudoops;
+#  #创建数据库
+#  #CREATE DATABASE IF NOT EXISTS bigdevops DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+#  #授予所有权限给 root 用户
+#  #GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '1234' WITH GRANT OPTION;
+#  #刷新权限
+#  #FLUSH PRIVILEGES;
+#  `
+
