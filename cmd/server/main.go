@@ -47,6 +47,8 @@ func main() {
 	}
 	logger.Info("MigrateTable success")
 
+	// TODO 测试用的，后面要删除
+	models.MockUserRegister(sc)
 	// 启动web服务
 	err = web.StartGIn(sc)
 }

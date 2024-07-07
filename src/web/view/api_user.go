@@ -2,9 +2,11 @@ package view
 
 import (
 	"cloudops/src/common"
+	"cloudops/src/config"
 	"cloudops/src/models"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 func UserLogin(c *gin.Context) {
@@ -17,6 +19,7 @@ func UserLogin(c *gin.Context) {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServeConfig)
 	// 校验字段是否必填，范围是否正确
 	err = validate.Struct(user)
 	if err != nil {
@@ -37,10 +40,14 @@ func UserLogin(c *gin.Context) {
 		return
 	}
 	common.OkWithData(user, c)
-	dbUser := &models.User{
-		Username: user.Username,
-		Password: user.Password,
+
+	dbUser, err := models.CheckUserPassword(&user)
+	if err != nil {
+		sc.Logger.Error("用户登录失败，用户名不存在或密码错误", zap.Error(err))
+		common.ReqBadFailWithMessage("用户名不存在或密码错误", c)
+		return
 	}
+	// 生成token，并返回给前端
 	models.TokenNext(dbUser, c)
 }
 
