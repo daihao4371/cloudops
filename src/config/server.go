@@ -18,11 +18,12 @@ type ServeConfig struct {
 }
 
 type JWT struct {
-	SingingKey      string        `yaml:"singing_key"` // JWT签名 密码加盐
-	ExpireTime      string        `yaml:"expire_time"` // 过期时间
-	ExpiresDuration time.Duration `yaml:"-"`           // 解析配置文件你的时候set的
-	BufferTime      string        `yaml:"buffer_time"` // 缓冲时间
-	Issuers         string        `yaml:"issuers"`     // JWT签发者
+	SingingKey      string        `yaml:"singing_key"`     // JWT签名 密码加盐
+	ExpireTime      string        `yaml:"expire_time"`     // 过期时间
+	ExpiresDuration time.Duration `yaml:"-"`               // 解析配置文件你的时候set的
+	BufferTime      string        `yaml:"buffer_time"`     // 临期时间
+	BufferDuration  time.Duration `yaml:"buffer_duration"` // 临期时间
+	Issuers         string        `yaml:"issuers"`         // JWT签发者
 }
 
 // 根据IO read 读取配置文件后的字符串解析yaml
@@ -42,6 +43,13 @@ func LoadServer(filename string) (*ServeConfig, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	bud, err := time.ParseDuration(cfg.JWTC.ExpireTime)
+	if err != nil {
+		return nil, err
+	}
+
 	cfg.JWTC.ExpiresDuration = exd
+	cfg.JWTC.BufferDuration = bud
 	return cfg, nil
 }

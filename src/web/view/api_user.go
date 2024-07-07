@@ -43,3 +43,9 @@ func UserLogin(c *gin.Context) {
 	}
 	models.TokenNext(dbUser, c)
 }
+
+// 登录以后获取用户信息
+func getUserInfoAfterLoign(c *gin.Context) {
+	jwtClaim := c.MustGet(common.GIN_CTX_JWT_CLAIM).(*models.UserCustomClaims)
+	common.OkWithDetailed(jwtClaim.User, "ok", c)
+}

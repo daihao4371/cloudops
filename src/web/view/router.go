@@ -1,6 +1,7 @@
 package view
 
 import (
+	"cloudops/src/web/middleware"
 	"github.com/gin-gonic/gin"
 	"time"
 )
@@ -16,6 +17,12 @@ func ConfigRouter(r *gin.Engine) {
 		//base.GET("/long", longRequest)
 		base.POST("/login", UserLogin)
 
+	}
+	// 登录后才能访问的路由
+	afterLoginApiGroup := r.Group("/api")
+	afterLoginApiGroup.Use(middleware.JWTAuthMiddleware())
+	{
+		afterLoginApiGroup.GET("/userinfo", getUserInfoAfterLoign)
 	}
 }
 

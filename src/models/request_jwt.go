@@ -34,7 +34,7 @@ func GenJwtToken(dbUser *User, sc *config.ServeConfig) (string, error) {
 		User: dbUser,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer: sc.JWTC.Issuers, // 签发人
-			// 默认5分钟过期：第一次生成的时候，过期时间戳，当前时间往后推
+			// 默认5分钟过期：第一次生成的时候，过期时间戳，当前时间往后推 过期时间
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(sc.JWTC.ExpiresDuration)), // 过期时间
 		},
 	}
@@ -42,4 +42,25 @@ func GenJwtToken(dbUser *User, sc *config.ServeConfig) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	// 使用指定的签名密钥生成token字符串
 	return token.SignedString([]byte(sc.JWTC.SingingKey))
+}
+
+// 解析token
+func ParseToken(jwtLong string, sc *config.ServeConfig) (*UserCustomClaims, error) {
+	// 解析token
+	tokenClaims, err := jwt.ParseWithClaims(
+		jwtLong, &UserCustomClaims{},
+		func(token *jwt.Token) (i interface{}, e error) {
+			return []byte(sc.JWTC.SingingKey), nil
+		})
+	if err != nil {
+		sc.Logger.Error("Failed to parse token", zap.Error(err))
+		return nil, err
+	}
+	// 判断是否有效
+	if claims, ok := tokenClaims.Claims.(*UserCustomClaims); ok && tokenClaims.Valid {
+		//sc.Logger.Error("Failed to parse token", zap.Any("过期时间", claims.RegisteredClaims.ExpiresAt))
+
+		return claims, nil
+	}
+	return nil, err
 }

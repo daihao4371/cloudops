@@ -58,7 +58,7 @@ func FailWithDetailed(data interface{}, message string, c *gin.Context) {
 }
 
 // 参数错误
-func Reuslt400(code int, dat interface{}, msg string, c *gin.Context) {
+func Result400(code int, dat interface{}, msg string, c *gin.Context) {
 	c.JSON(http.StatusBadRequest, BaseResp{
 		Code:    code,
 		Data:    dat,
@@ -68,7 +68,7 @@ func Reuslt400(code int, dat interface{}, msg string, c *gin.Context) {
 }
 
 // 权限错误
-func Reuslt401(code int, dat interface{}, msg string, c *gin.Context) {
+func Result401(code int, dat interface{}, msg string, c *gin.Context) {
 	c.JSON(http.StatusBadRequest, BaseResp{
 		Code:    code,
 		Data:    dat,
@@ -77,12 +77,44 @@ func Reuslt401(code int, dat interface{}, msg string, c *gin.Context) {
 	})
 }
 
+func Result403(code int, data interface{}, msg string, c *gin.Context) {
+	// 开始时间
+	c.JSON(http.StatusForbidden, BaseResp{
+		Code:    code,
+		Data:    data,
+		Message: msg,
+		Type:    "",
+	})
+}
+
+func Result5XX(code int, data interface{}, msg string, c *gin.Context) {
+	// 开始时间
+	c.JSON(http.StatusForbidden, BaseResp{
+		Code:    code,
+		Data:    data,
+		Message: msg,
+		Type:    "",
+	})
+}
+
 func ReqBadFailWithMessage(message string, c *gin.Context) {
-	Reuslt400(ERROR, map[string]interface{}{}, message, c)
+	Result400(ERROR, map[string]interface{}{}, message, c)
 }
 func ReqBadFailWithDetailed(data interface{}, message string, c *gin.Context) {
-	Reuslt400(ERROR, data, message, c)
+	Result400(ERROR, data, message, c)
 }
 func ReqBadFail(c *gin.Context) {
-	Reuslt400(ERROR, map[string]interface{}{}, "operate failed", c)
+	Result400(ERROR, map[string]interface{}{}, "operate failed", c)
+}
+
+func Req401WithWithDetailed(data interface{}, message string, c *gin.Context) {
+	Result401(ERROR, data, message, c)
+}
+
+func Req403WithWithMessage(message string, c *gin.Context) {
+	Result403(ERROR, map[string]interface{}{}, message, c)
+}
+
+func Req5XXWithWithDetailed(data interface{}, message string, c *gin.Context) {
+	Result401(ERROR, data, message, c)
 }

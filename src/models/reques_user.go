@@ -18,6 +18,6 @@ type UserCustomClaims struct {
 // 准备一个login接口的返回数据
 type UserLoginResponse struct {
 	*User
-	Token     string `json:"token"` // 返回的token
-	ExpiresAt int64  `json:"expiresAt"`
+	Token     string `json:"token"`     // 返回的token
+	ExpiresAt int64  `json:"expiresAt"` // 过期时间
 }
