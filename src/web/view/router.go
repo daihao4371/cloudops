@@ -22,7 +22,7 @@ func ConfigRouter(r *gin.Engine) {
 	afterLoginApiGroup := r.Group("/api")
 	afterLoginApiGroup.Use(middleware.JWTAuthMiddleware())
 	{
-		afterLoginApiGroup.GET("/userinfo", getUserInfoAfterLoign)
+		afterLoginApiGroup.GET("/getUserInfo", getUserInfoAfterLogin)
 	}
 }
 

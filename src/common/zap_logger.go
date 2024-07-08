@@ -44,7 +44,7 @@ func NewZaplogger(logLevel, LogPath, ErrLogPath string) *zap.Logger {
 	// 标准日志轮转
 	writer := &lumberjack.Logger{
 		Filename:   LogPath, // 日志文件路径
-		MaxSize:    1,       // 每个日志文件的最大大小（单位：M）
+		MaxSize:    100,     // 每个日志文件的最大大小（单位：M）
 		MaxBackups: 30,      // 日志文件最多保存多少个备份
 		MaxAge:     7,       // 文件最多保存多少天
 		LocalTime:  true,    // 开启本地时间

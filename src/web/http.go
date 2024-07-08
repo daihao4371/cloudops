@@ -6,6 +6,7 @@ import (
 	"cloudops/src/web/middleware"
 	"cloudops/src/web/view"
 	"github.com/gin-contrib/requestid"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 // StartGIn 启动gin
 // 设置中间件
-func StartGIn(sc *config.ServeConfig) error {
+func StartGIn(sc *config.ServerConfig) error {
 	// 初始化引擎
 	//gin.SetMode(gin.ReleaseMode)
 	//r := gin.Default()
@@ -38,7 +39,7 @@ func StartGIn(sc *config.ServeConfig) error {
 		p.Use(r)*/
 
 	// 添加中间件 日志记录
-	//r.Use(ginzap.Ginzap(sc.Logger, time.RFC3339, false))
+	r.Use(ginzap.Ginzap(sc.Logger, time.RFC3339, false))
 
 	// 传递变量
 	r.Use(middleware.ConfigMiddleware(varMap))

@@ -10,7 +10,7 @@ import (
 )
 
 func TokenNext(dbUser *User, c *gin.Context) {
-	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServeConfig)
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 生成JWTtoken
 	token, err := GenJwtToken(dbUser, sc)
 	if err != nil {
@@ -20,7 +20,7 @@ func TokenNext(dbUser *User, c *gin.Context) {
 	}
 	// 构造返回结构体
 	userResp := UserLoginResponse{
-		User:      nil,
+		User:      dbUser,
 		Token:     token,
 		ExpiresAt: 0,
 	}
@@ -28,7 +28,7 @@ func TokenNext(dbUser *User, c *gin.Context) {
 }
 
 // 生成JWT
-func GenJwtToken(dbUser *User, sc *config.ServeConfig) (string, error) {
+func GenJwtToken(dbUser *User, sc *config.ServerConfig) (string, error) {
 	// new claim对象
 	c := UserCustomClaims{
 		User: dbUser,
@@ -45,7 +45,7 @@ func GenJwtToken(dbUser *User, sc *config.ServeConfig) (string, error) {
 }
 
 // 解析token
-func ParseToken(jwtLong string, sc *config.ServeConfig) (*UserCustomClaims, error) {
+func ParseToken(jwtLong string, sc *config.ServerConfig) (*UserCustomClaims, error) {
 	// 解析token
 	tokenClaims, err := jwt.ParseWithClaims(
 		jwtLong, &UserCustomClaims{},

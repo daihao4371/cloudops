@@ -5,6 +5,11 @@ import (
 	"net/http"
 )
 
+const (
+	ERROR  = 7
+	SUCESS = 0
+)
+
 // 定义一个通用的返回结构体
 type BaseResp struct {
 	Code    int         `json:"code"` // 前后端交互的字段码
@@ -15,21 +20,17 @@ type BaseResp struct {
 
 // http的200响应，但是不代表code是OK的
 func Result(code int, data interface{}, msg string, c *gin.Context) {
-	c.JSON(200, BaseResp{
-		Code:    200,
+	// 开始时间
+	c.JSON(http.StatusOK, BaseResp{
+		Code:    code,
 		Data:    data,
 		Message: msg,
 		Type:    "",
 	})
 }
 
-const (
-	ERROR  = 7
-	SUCESS = 0
-)
-
 func Ok(c *gin.Context) {
-	Result(SUCESS, map[string]interface{}{}, "operate sucess", c)
+	Result(SUCESS, map[string]interface{}{}, "操作成功", c)
 }
 
 func OkWithMessage(message string, c *gin.Context) {
@@ -37,15 +38,14 @@ func OkWithMessage(message string, c *gin.Context) {
 }
 
 func OkWithData(data interface{}, c *gin.Context) {
-	Result(SUCESS, data, "Search successful", c)
+	Result(SUCESS, data, "查询成功", c)
 }
 
 func OkWithDetailed(data interface{}, message string, c *gin.Context) {
 	Result(SUCESS, data, message, c)
 }
-
 func Fail(c *gin.Context) {
-	Result(ERROR, map[string]interface{}{}, "operate failed", c)
+	Result(ERROR, map[string]interface{}{}, "操作失败", c)
 }
 
 func FailWithMessage(message string, c *gin.Context) {
@@ -54,24 +54,14 @@ func FailWithMessage(message string, c *gin.Context) {
 
 func FailWithDetailed(data interface{}, message string, c *gin.Context) {
 	Result(ERROR, data, message, c)
-
 }
 
 // 参数错误
-func Result400(code int, dat interface{}, msg string, c *gin.Context) {
+func Result400(code int, data interface{}, msg string, c *gin.Context) {
+	// 开始时间
 	c.JSON(http.StatusBadRequest, BaseResp{
 		Code:    code,
-		Data:    dat,
-		Message: msg,
-		Type:    "",
-	})
-}
-
-// 权限错误
-func Result401(code int, dat interface{}, msg string, c *gin.Context) {
-	c.JSON(http.StatusBadRequest, BaseResp{
-		Code:    code,
-		Data:    dat,
+		Data:    data,
 		Message: msg,
 		Type:    "",
 	})
@@ -87,9 +77,20 @@ func Result403(code int, data interface{}, msg string, c *gin.Context) {
 	})
 }
 
+// 没权限
+func Result401(code int, data interface{}, msg string, c *gin.Context) {
+	// 开始时间
+	c.JSON(http.StatusUnauthorized, BaseResp{
+		Code:    code,
+		Data:    data,
+		Message: msg,
+		Type:    "",
+	})
+}
+
 func Result5XX(code int, data interface{}, msg string, c *gin.Context) {
 	// 开始时间
-	c.JSON(http.StatusForbidden, BaseResp{
+	c.JSON(http.StatusInternalServerError, BaseResp{
 		Code:    code,
 		Data:    data,
 		Message: msg,
@@ -100,11 +101,9 @@ func Result5XX(code int, data interface{}, msg string, c *gin.Context) {
 func ReqBadFailWithMessage(message string, c *gin.Context) {
 	Result400(ERROR, map[string]interface{}{}, message, c)
 }
-func ReqBadFailWithDetailed(data interface{}, message string, c *gin.Context) {
+
+func ReqBadFailWithWithDetailed(data interface{}, message string, c *gin.Context) {
 	Result400(ERROR, data, message, c)
-}
-func ReqBadFail(c *gin.Context) {
-	Result400(ERROR, map[string]interface{}{}, "operate failed", c)
 }
 
 func Req401WithWithDetailed(data interface{}, message string, c *gin.Context) {

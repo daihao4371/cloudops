@@ -16,7 +16,7 @@ func TimeCost() gin.HandlerFunc {
 		// 请求处理
 		c.Next()
 
-		sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServeConfig)
+		sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 		sc.Logger.Info("耗时中间件打印结果",
 			zap.String("URL", c.Request.URL.String()),
 			zap.Duration("耗时", time.Since(nowTime)),

@@ -6,16 +6,17 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
 	DB *gorm.DB
 )
 
-func InitDb(sc *config.ServeConfig) error {
+func InitDb(sc *config.ServerConfig) error {
 	db, err := gorm.Open(
 		mysql.Open(sc.MySqlC.DSN),
-		&gorm.Config{},
+		&gorm.Config{Logger: logger.Default.LogMode(logger.Info)},
 	)
 	if err != nil {
 		return err
@@ -31,30 +32,28 @@ func MigrateTable() error {
 	)
 }
 
-func MockUserRegister(sc *config.ServeConfig) {
+func MockUserRegister(sc *config.ServerConfig) {
 	u1 := User{
-		Model:    gorm.Model{},
-		UserId:   0,
 		Username: "admin",
 		Password: "123456",
 		RealName: "admin",
-		desc:     "超级管理员",
+		Desc:     "",
 		HomePath: "/system/account",
 		Enable:   1,
-		Role: []*Role{
+		Roles: []*Role{
 			{
 				RoleName:  "超级管理员",
 				RoleValue: "super",
 			}, {
-				RoleName:  "前端管理员",
+				RoleName:  "前端权限管理员",
 				RoleValue: "fronAdmin",
 			},
 		},
 	}
-	u1.Password = common.BcrypaHash(u1.Password)
+	u1.Password = common.BcryptHash(u1.Password)
 	err := DB.Create(&u1).Error
 	if err != nil {
-		sc.Logger.Error("模拟注册用户失败", zap.Any("err", err))
+		sc.Logger.Error("模拟注册用户失败", zap.String("错误", err.Error()))
 	}
-	sc.Logger.Info("模拟注册用户成功", zap.Any("user", u1))
+	sc.Logger.Info("模拟注册用户成功")
 }

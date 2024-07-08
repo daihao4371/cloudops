@@ -29,7 +29,7 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 			return
 		}
 		//解析token字符串jwt解析
-		sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServeConfig)
+		sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 		userClaims, err := models.ParseToken(parts[1], sc)
 		if err != nil {
 			common.Req401WithWithDetailed(gin.H{"reload": true}, fmt.Sprintf("parseToken 解析token包含信息错误：%v", err.Error()), c)
