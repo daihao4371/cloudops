@@ -10,7 +10,8 @@ import (
 func ConfigRouter(r *gin.Engine) {
 	// 定义一个组
 	// 共享中间件
-	base := r.Group("/basic-api")
+	//base := r.Group("/basic-api")
+	base := r.Group("/")
 	{
 		base.GET("/ping", ping)
 		base.GET("/now", getNowTs)
@@ -23,6 +24,11 @@ func ConfigRouter(r *gin.Engine) {
 	afterLoginApiGroup.Use(middleware.JWTAuthMiddleware())
 	{
 		afterLoginApiGroup.GET("/getUserInfo", getUserInfoAfterLogin)
+		afterLoginApiGroup.GET("/getPerCode", getPerCode)
+	}
+	systemApiGroup := afterLoginApiGroup.Group("/system")
+	{
+		systemApiGroup.GET("/getMenuList", getMenuList)
 	}
 }
 

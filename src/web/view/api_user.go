@@ -53,24 +53,63 @@ func UserLogin(c *gin.Context) {
 // 登录以后获取用户信息
 func getUserInfoAfterLogin(c *gin.Context) {
 
-	// 我得拿到 userCliams
-	jwtClaims, ok := c.MustGet(common.GIN_CTX_JWT_CLAIM).(*models.UserCustomClaims)
-	if !ok {
-		// 如果获取失败,则返回错误
-		common.FailWithMessage("获取用户信息失败", c)
-		return
-	}
-	common.OkWithDetailed(jwtClaims.User, "ok", c)
-
 	/*	userName := c.MustGet(common.GIN_CTX_JWT_USER_NAME).(string)
 		sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 		dbUser, err := models.GetUserByUserName(userName)
 		if err != nil {
-			sc.Logger.Error("通过token解析到的userName去数据库中找User失败",
-				zap.Error(err),
-			)
-			common.ReqBadFailWithMessage(fmt.Sprintf("通过token解析到的userName去数据库中找User失败:%v", err.Error()), c)
+			sc.Logger.Error("通过token解析到的username去数据库找User失败", zap.Error(err))
+			common.ReqBadFailWithMessage(fmt.Sprintf("通过token解析到的username去数据库找User失败:%v", err.Error()), c)
 			return
 		}
-		common.OkWithDetailed(dbUser, "ok", c)*/
+		common.OkWithDetailed(dbUser, "获取用户信息成功", c)*/
+
+	userName, err := getContextUserName(c)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	sc, err := getContextServerConfig(c)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	dbUser, err := models.GetUserByUserName(userName)
+	if err != nil {
+		sc.Logger.Error("获取用户信息失败", zap.Error(err))
+		common.FailWithMessage(fmt.Sprintf("获取用户信息失败:%v", err.Error()), c)
+		return
+	}
+	common.OkWithDetailed(dbUser, "获取用户信息成功", c)
+}
+
+func getPerCode(c *gin.Context) {
+	common.OkWithDetailed("123", "获取权限码成功", c)
+}
+
+func getContextUserName(c *gin.Context) (string, error) {
+	userNameI, exists := c.Get(common.GIN_CTX_JWT_USER_NAME)
+	if !exists {
+		return "", fmt.Errorf("context中不存在用户名")
+	}
+	userName, ok := userNameI.(string)
+	if !ok {
+		return "", fmt.Errorf("context中的用户名类型不正确")
+	}
+	return userName, nil
+}
+
+func getContextServerConfig(c *gin.Context) (*config.ServerConfig, error) {
+	scI, exists := c.Get(common.GIN_CTX_CONFIG_CONFIG)
+	if !exists {
+		return nil, fmt.Errorf("context中不存在服务器配置")
+	}
+	sc, ok := scI.(*config.ServerConfig)
+	if !ok {
+		return nil, fmt.Errorf("context中服务器配置类型错误")
+	}
+	return sc, nil
+}
+
+func handleError(c *gin.Context, err error) {
+	common.ReqBadFailWithMessage(err.Error(), c)
 }

@@ -65,7 +65,7 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 		}
 
 		// 设置cliam 后续的处理逻辑就能拿到
-		c.Set(common.GIN_CTX_JWT_CLAIM, userClaims)
+		c.Set(common.GIN_CTX_JWT_USER_NAME, userClaims.Username)
 		c.Next()
 
 	}
