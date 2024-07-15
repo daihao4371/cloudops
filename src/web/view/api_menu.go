@@ -19,9 +19,14 @@ func getMenuList(c *gin.Context) {
 		sc.Logger.Error("get user by username error", zap.Any("err", err))
 		common.ReqBadFailWithMessage(fmt.Sprintf("get user by username error: %s", err), c)
 	}
+	// 遍历role列表，找到menu list
 	roles := dbUser.Roles
 	for _, role := range roles {
+		sc.Logger.Info("遍历user的role打印", zap.Any("role", role.RoleName),
+			zap.Any("role的menulist详情", role.Menus),
+		)
 		role := role
-		fmt.Println(role)
+		// 通过role 拿到所有menu
+		fmt.Println(role, "_---------------------------------------")
 	}
 }

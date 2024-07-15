@@ -49,7 +49,7 @@ func CheckUserPassword(ru *UserLoginRequest) (*User, error) {
 func GetUserByUserName(userName string) (*User, error) {
 	var dbUser User
 	// 根据用户名查询用户信息，并预加载用户角色及其菜单
-	err := DB.Where("username = ?", userName).Preload("Roles").First(&dbUser).Error
+	err := DB.Where("username = ?", userName).Preload("Roles.Menus").First(&dbUser).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("用户名不存在")

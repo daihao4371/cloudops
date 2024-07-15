@@ -16,8 +16,8 @@ var (
 func InitDb(sc *config.ServerConfig) error {
 	db, err := gorm.Open(
 		mysql.Open(sc.MySqlC.DSN),
-		&gorm.Config{Logger: logger.Default.LogMode(logger.Info)},
-		//&gorm.Config{Logger: logger.Default.LogMode(logger.Silent)},
+		//&gorm.Config{Logger: logger.Default.LogMode(logger.Info)},
+		&gorm.Config{Logger: logger.Default.LogMode(logger.Silent)},
 	)
 	if err != nil {
 		return err
