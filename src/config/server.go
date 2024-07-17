@@ -54,4 +54,5 @@ func LoadServer(filename string) (*ServerConfig, error) {
 	cfg.JWTC.ExpiresDuration = exd
 	cfg.JWTC.BufferDuration = bud
 	return cfg, nil
+
 }

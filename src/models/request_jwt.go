@@ -45,10 +45,10 @@ func GenJwtToken(dbUser *User, sc *config.ServerConfig) (string, error) {
 }
 
 // 解析token
-func ParseToken(jwtLong string, sc *config.ServerConfig) (*UserCustomClaims, error) {
+func ParseToken(jwtLongToken string, sc *config.ServerConfig) (*UserCustomClaims, error) {
 	// 解析token
 	tokenClaims, err := jwt.ParseWithClaims(
-		jwtLong, &UserCustomClaims{},
+		jwtLongToken, &UserCustomClaims{},
 		func(token *jwt.Token) (i interface{}, e error) {
 			return []byte(sc.JWTC.SingingKey), nil
 		})
