@@ -82,7 +82,7 @@ func getUserInfoAfterLogin(c *gin.Context) {
 	common.OkWithDetailed(dbUser, "获取用户信息成功", c)
 }
 
-func getPerCode(c *gin.Context) {
+func getPermCode(c *gin.Context) {
 	common.OkWithDetailed("123", "获取权限码成功", c)
 }
 

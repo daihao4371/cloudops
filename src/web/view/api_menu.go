@@ -144,7 +144,7 @@ func getMenuList(c *gin.Context) {
 	common.OkWithDetailed(finalMenus, "ok", c)
 }
 
-func updateMenuList(c *gin.Context) {
+func updateMenu(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验menu的字段
 	var reqMenu models.Menu

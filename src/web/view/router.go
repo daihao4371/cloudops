@@ -24,12 +24,12 @@ func ConfigRouter(r *gin.Engine) {
 	afterLoginApiGroup.Use(middleware.JWTAuthMiddleware())
 	{
 		afterLoginApiGroup.GET("/getUserInfo", getUserInfoAfterLogin)
-		afterLoginApiGroup.GET("/getPerCode", getPerCode)
+		afterLoginApiGroup.GET("/getPermCode", getPermCode)
 	}
 	systemApiGroup := afterLoginApiGroup.Group("/system")
 	{
 		systemApiGroup.GET("/getMenuList", getMenuList)
-		systemApiGroup.POST("/updateMenuList", updateMenuList)
+		systemApiGroup.POST("/updateMenu", updateMenu)
 	}
 }
 
