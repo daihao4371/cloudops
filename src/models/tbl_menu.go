@@ -23,7 +23,7 @@ type Menu struct {
 	Path      string  `json:"path" gorm:"type:varchar(50);comment:路由路径"`
 	Remark    string  `json:"remark" gorm:"comment:用户描述"`
 	HomePath  string  `json:"homePath" gorm:"comment:登陆后的默认首页"`
-	Status    string  `json:"status" gorm:"default:1;comment:是否启用 0禁用 1启用"`
+	Status    string  `json:"status" gorm:"default:0;comment:是否启用 0禁用 1启用"`
 	Roles     []*Role `json:"roles" gorm:"many2many:role_menus;"`
 	Children  []*Menu `json:"children" gorm:"-"` // 返回给前端的数据
 	Key       uint    `json:"value"  gorm:"-"`   // 前端用的键
@@ -49,4 +49,8 @@ func GetMenuById(id int) (*Menu, error) {
 		}
 	}
 	return &dbMenu, nil
+}
+
+func (obj *Menu) UpdateOne() error {
+	return DB.Updates(obj).Error
 }

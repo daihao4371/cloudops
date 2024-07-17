@@ -6,6 +6,7 @@ import (
 	"cloudops/src/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 	"sort"
 )
@@ -141,4 +142,53 @@ func getMenuList(c *gin.Context) {
 		finalMenus = append(finalMenus, m)
 	}
 	common.OkWithDetailed(finalMenus, "ok", c)
+}
+
+func updateMenuList(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	// 校验menu的字段
+	var reqMenu models.Menu
+	err := c.ShouldBindJSON(&reqMenu)
+
+	// 判断JSON解析是否正确
+	if err != nil {
+		sc.Logger.Error("解析更新菜单请求失败", zap.Any("菜单", reqMenu), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 校验字段是否必填，范围是否正确
+	sc.Logger.Info("更新菜单请求", zap.Any("菜单", reqMenu))
+	err = validate.Struct(reqMenu)
+	if err != nil {
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"Request error",
+				c,
+			)
+			return
+		}
+
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+	}
+
+	_, err = models.GetMenuById(int(reqMenu.ID))
+	if err != nil {
+		sc.Logger.Error("通过id找menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	// 更新menu
+	err = reqMenu.UpdateOne()
+	if err != nil {
+		sc.Logger.Error("更新menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithMessage("更新成功", c)
 }

@@ -29,6 +29,7 @@ func ConfigRouter(r *gin.Engine) {
 	systemApiGroup := afterLoginApiGroup.Group("/system")
 	{
 		systemApiGroup.GET("/getMenuList", getMenuList)
+		systemApiGroup.POST("/updateMenuList", updateMenuList)
 	}
 }
 
