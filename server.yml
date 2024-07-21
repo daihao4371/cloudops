@@ -4,7 +4,7 @@ err_log_path: ./logs/cloudops-err.log
 log_level: DEBUG
 jwt:
   singing_key: cloudops # 密码
-  expire_time: 30m  # 有效时间
+  expire_time: 60m  # 有效时间
   buffer_time: 1m  # 临期时间
   issuer: cloudops # 签发人
 

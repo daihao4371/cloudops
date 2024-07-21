@@ -21,3 +21,8 @@ type UserLoginResponse struct {
 	Token     string `json:"token"`     // 返回的token
 	ExpiresAt int64  `json:"expiresAt"` // 过期时间
 }
+
+// 账户存在性请求结构体
+type AccountExistRequest struct {
+	Account string `json:"account"`
+}

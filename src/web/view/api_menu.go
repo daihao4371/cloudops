@@ -9,6 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 	"sort"
+	"strconv"
 )
 
 func getMenuList(c *gin.Context) {
@@ -82,14 +83,20 @@ func getMenuList(c *gin.Context) {
 			menu.Meta.IgnoreKeepAlive = true
 			// 拼接小id 给前端的树形结构的
 
-			if menu.Pid == 0 {
+			if menu.Pid == "0" {
 				// 说明这个菜单是父级
 				fatherMenuMap[menu.ID] = menu
 				continue
 			}
 
+			// 说明 menu 是子集
+			pid, err := strconv.Atoi(menu.Pid)
+			if err != nil {
+				sc.Logger.Error("菜单的 Pid 转换错误", zap.Error(err))
+				continue
+			}
 			// 说明menu是子集
-			fatherMenu, err := models.GetMenuById(menu.Pid)
+			fatherMenu, err := models.GetMenuById(pid)
 			if err != nil {
 				sc.Logger.Error("通过Pid找menu错误", zap.Error(err))
 				continue
@@ -144,51 +151,140 @@ func getMenuList(c *gin.Context) {
 	common.OkWithDetailed(finalMenus, "ok", c)
 }
 
+func getMenuListAll(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	// 从数据库中获取所有的菜单
+	menus, err := models.GetMenuAll()
+	if err != nil {
+		sc.Logger.Error("获取菜单列表错误", zap.Error(err))
+		common.ReqBadFailWithMessage(fmt.Sprintf("获取菜单列表错误:%v", err.Error()), c)
+		return
+	}
+	for _, menu := range menus {
+		menu := menu
+		// 拼接前端依赖的字段
+		menu.Meta = &models.MenuMeta{}
+		menu.Meta.Icon = menu.Icon
+		menu.Meta.Title = menu.Title
+		menu.Meta.ShowMenu = common.COMMON_SHOW_MAP[menu.Show]
+		menu.Key = menu.ID
+		menu.Value = menu.ID
+
+	}
+	common.OkWithDetailed(menus, "ok", c)
+}
+
 func updateMenu(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
-	// 校验menu的字段
+	// 校验一下 menu字段
 	var reqMenu models.Menu
-	err := c.ShouldBindJSON(&reqMenu)
 
-	// 判断JSON解析是否正确
+	err := c.ShouldBindJSON(&reqMenu)
 	if err != nil {
 		sc.Logger.Error("解析更新菜单请求失败", zap.Any("菜单", reqMenu), zap.Error(err))
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-
-	// 校验字段是否必填，范围是否正确
-	sc.Logger.Info("更新菜单请求", zap.Any("菜单", reqMenu))
+	// 在这里校验字段，是否必填，范围是否正确
 	err = validate.Struct(reqMenu)
 	if err != nil {
+
+		// 这里为什么要判断错误是否是 ValidationErrors
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"请求出错",
+				c,
+			)
+			return
+		}
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+
+	}
+
+	_, err = models.GetMenuById(int(reqMenu.ID))
+	if err != nil {
+		sc.Logger.Error("根据id找menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	err = reqMenu.UpdateOne()
+	if err != nil {
+		sc.Logger.Error("根据id更新menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	common.OkWithMessage("更新成功", c)
+
+}
+
+func createMenu(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+
+	// 校验一下 menu 字段
+	var reqMenu models.Menu
+	err := c.ShouldBindJSON(&reqMenu)
+	if err != nil {
+		sc.Logger.Error("解析新增菜单请求失败", zap.Any("菜单", reqMenu), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 在这里校验字段，是否必填，范围是否正确
+	err = validate.Struct(reqMenu)
+	if err != nil {
+		// 这里为什么要判断错误是否是 ValidationErrors
 		if errors, ok := err.(validator.ValidationErrors); ok {
 			common.ReqBadFailWithWithDetailed(
 				gin.H{
 					"翻译前": err.Error(),
 					"翻译后": errors.Translate(trans),
 				},
-				"Request error",
+				"请求出错",
 				c,
 			)
 			return
 		}
-
 		common.ReqBadFailWithMessage(err.Error(), c)
 		return
 	}
 
-	_, err = models.GetMenuById(int(reqMenu.ID))
+	err = reqMenu.CreateOne()
 	if err != nil {
-		sc.Logger.Error("通过id找menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
+		sc.Logger.Error("创建menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-	// 更新menu
-	err = reqMenu.UpdateOne()
+
+	common.OkWithMessage("创建成功", c)
+}
+
+func deleteMenu(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	// 校验一下 menu字段
+	id := c.Param("id")
+	sc.Logger.Info("删除菜单", zap.Any("id", id))
+
+	// 先 去db中根据id找到这个user
+	intVar, _ := strconv.Atoi(id)
+	dbMenu, err := models.GetMenuById(intVar)
 	if err != nil {
-		sc.Logger.Error("更新menu错误", zap.Any("菜单", reqMenu), zap.Error(err))
+		sc.Logger.Error("根据id找菜单错误", zap.Any("菜单", id), zap.Error(err))
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-	common.OkWithMessage("更新成功", c)
+
+	err = dbMenu.DeleteOne()
+	if err != nil {
+		sc.Logger.Error("根据id删除菜单错误", zap.Any("菜单", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithMessage("删除成功", c)
 }

@@ -28,8 +28,19 @@ func ConfigRouter(r *gin.Engine) {
 	}
 	systemApiGroup := afterLoginApiGroup.Group("/system")
 	{
+		// 菜单相关
 		systemApiGroup.GET("/getMenuList", getMenuList)
+		systemApiGroup.GET("/getMenuListAll", getMenuListAll)
 		systemApiGroup.POST("/updateMenu", updateMenu)
+		systemApiGroup.POST("/createMenu", createMenu)
+		systemApiGroup.DELETE("/deleteMenu/:id", deleteMenu)
+		// 角色相关
+		systemApiGroup.GET("/getRoleListAll", getRoleListAll)
+
+		// 用户相关
+		systemApiGroup.POST("/createAccount", createAccount)
+		systemApiGroup.GET("/getAccountList", getAccountList)
+		systemApiGroup.POST("/accountExist", accountExist)
 	}
 }
 
