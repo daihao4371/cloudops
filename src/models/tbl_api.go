@@ -8,16 +8,16 @@ import (
 
 // Api 结构体定义了API的数据库表字段及其关系
 type Api struct {
-	gorm.Model         // 嵌入 Model 结构体，自动包含 ID 和 CreatedAt 字段
-	Path       string  `json:"path" gorm:"type:varchar(50);comment:路由路径"`            // API 路径
-	Method     string  `json:"method" gorm:"type:varchar(50);comment:http请求方法"`      // HTTP 请求方法
-	Pid        int     `json:"pId" gorm:"comment:apiGroups 父级的id 为了给树用的"`            // 父级 API ID，用于树形结构
-	Title      string  `json:"title" gorm:"type:varchar(50);uniqueIndex;comment:名称"` // API 名称，唯一索引
-	Roles      []*Role `json:"roles" gorm:"many2many:role_apis;"`                    // 多对多关系，API 对应的角色
-	Type       string  `json:"type" gorm:"type:varchar(5);comment:类型 0=父级 1=子级"`     // API 类型
-	Key        uint    `json:"key"  gorm:"-"`                                        // 前端用的键
-	Value      uint    `json:"value"  gorm:"-"`                                      // 前端用的值
-	Children   []*Api  `json:"children" gorm:"-"`                                    // 子 API，返回给前端
+	Model            // 嵌入 Model 结构体，自动包含 ID 和 CreatedAt 字段
+	Path     string  `json:"path" gorm:"type:varchar(50);comment:路由路径"`            // API 路径
+	Method   string  `json:"method" gorm:"type:varchar(50);comment:http请求方法"`      // HTTP 请求方法
+	Pid      int     `json:"pId" gorm:"comment:apiGroups 父级的id 为了给树用的"`            // 父级 API ID，用于树形结构
+	Title    string  `json:"title" gorm:"type:varchar(50);uniqueIndex;comment:名称"` // API 名称，唯一索引
+	Roles    []*Role `json:"roles" gorm:"many2many:role_apis;"`                    // 多对多关系，API 对应的角色
+	Type     string  `json:"type" gorm:"type:varchar(5);comment:类型 0=父级 1=子级"`     // API 类型
+	Key      uint    `json:"key"  gorm:"-"`                                        // 前端用的键
+	Value    uint    `json:"value"  gorm:"-"`                                      // 前端用的值
+	Children []*Api  `json:"children" gorm:"-"`                                    // 子 API，返回给前端
 }
 
 // Create 创建一个新api记录
@@ -32,7 +32,7 @@ func GetApiAll() (objs []*Api, err error) {
 }
 
 // GetApiById 根据 ID 获取 API 包括关联的角色信息
-func GetApiById() (*Api, error) {
+func GetApiById(id int) (*Api, error) {
 	var dbObje Api
 	// 根据ID查询API，并预加载关联的角色信息
 	err := DB.Where("id = ?").Preload("Roles").First(&dbObje).Error

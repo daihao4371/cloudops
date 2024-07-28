@@ -83,20 +83,14 @@ func getMenuList(c *gin.Context) {
 			menu.Meta.IgnoreKeepAlive = true
 			// 拼接小id 给前端的树形结构的
 
-			if menu.Pid == "0" {
+			if menu.Pid == 0 {
 				// 说明这个菜单是父级
 				fatherMenuMap[menu.ID] = menu
 				continue
 			}
 
-			// 说明 menu 是子集
-			pid, err := strconv.Atoi(menu.Pid)
-			if err != nil {
-				sc.Logger.Error("菜单的 Pid 转换错误", zap.Error(err))
-				continue
-			}
 			// 说明menu是子集
-			fatherMenu, err := models.GetMenuById(pid)
+			fatherMenu, err := models.GetMenuById(menu.Pid)
 			if err != nil {
 				sc.Logger.Error("通过Pid找menu错误", zap.Error(err))
 				continue

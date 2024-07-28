@@ -39,16 +39,14 @@ func main() {
 	}
 	logger.Info("InitDb success")
 
-	// 同步表结构
-	err = models.MigrateTable()
-	if err != nil {
-		logger.Error("MigrateTable failed", zap.String("err", err.Error()))
-		return
-	}
-	logger.Info("MigrateTable success")
+	/*	// 同步表结构
+		err = models.MigrateTable()
+		if err != nil {
+			logger.Error("MigrateTable failed", zap.String("err", err.Error()))
+			return
+		}
+		logger.Info("MigrateTable success")*/
 
-	// TODO 测试用的，后面要删除
-	models.MockUserRegister(sc)
 	// 启动web服务
 	err = web.StartGIn(sc)
 }

@@ -26,3 +26,8 @@ type UserLoginResponse struct {
 type AccountExistRequest struct {
 	Account string `json:"account"`
 }
+
+type ChangePasswordRequest struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}

@@ -3,21 +3,22 @@ package models
 import (
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Role struct {
-	gorm.Model
+	Model             // 不用每次写ID 和 createAt了
 	OrderNo   int     `json:"orderNo" gorm:"comment:排序"`
-	RoleName  string  `json:"roleName" gorm:"type:varchar(100);uniqueIndex;comment:角色中文名称"`
+	RoleName  string  `json:"roleName" gorm:"type:varchar(100);uniqueIndex;comment:角色中文名称"` // 用户登录名 index 代表索引
 	RoleValue string  `json:"roleValue"  gorm:"type:varchar(100);uniqueIndex;comment:角色值"`
 	Remark    string  `json:"remark" gorm:"comment:用户描述"`
 	HomePath  string  `json:"homePath" gorm:"comment:登陆后的默认首页"`
-	Status    string  `json:"status" gorm:"default:1;comment:角色是否被冻结 1正常 2冻结"`
-	Users     []*User `json:"users" gorm:"many2many:user_roles;"`
-	Menus     []*Menu `json:"menus" gorm:"many2many:role_menus;"` // 多对多关系，角色对应的菜单
-	Apis      []*Api  `json:"apis" gorm:"many2many:role_apis;"`
-	MenuIds   []int   `json:"menuIds" gorm:"-"`
-	ApiIds    []int   `json:"apiIds" gorm:"-"`
+	Status    string  `json:"status" gorm:"default:1;comment:角色是否被冻结 1正常 2冻结"` //用户是否被冻结 1正常 2冻结
+	Users     []*User `json:"users" gorm:"many2many:user_roles;"`              // 多对多
+	Menus     []*Menu `json:"menus" gorm:"many2many:role_menus;"`              // 多对多
+	Apis      []*Api  `json:"apis" gorm:"many2many:role_apis;"`                // 多对多
+	MenuIds   []int   `json:"menuIds" gorm:"-"`                                // 给前端用的
+	ApiIds    []int   `json:"apiIds" gorm:"-"`                                 // 给前端用的
 }
 
 // 获取所有角色,用户和API
@@ -73,4 +74,8 @@ func (obj *Role) UpdateMenus(meuns []*Menu) error {
 		return fmt.Errorf("更新角色信息失败:%w,更新角色菜单失败:%w", err1, err2)
 	}
 
+}
+
+func (obj *Role) DeleteOne() error {
+	return DB.Delete(clause.Associations).Unscoped().Delete(obj).Error
 }

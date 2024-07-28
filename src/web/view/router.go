@@ -39,8 +39,15 @@ func ConfigRouter(r *gin.Engine) {
 
 		// 用户相关
 		systemApiGroup.POST("/createAccount", createAccount)
-		systemApiGroup.GET("/getAccountList", getAccountList)
 		systemApiGroup.POST("/accountExist", accountExist)
+		systemApiGroup.POST("/updateAccount", updateAccount)
+		systemApiGroup.POST("/changePassword", changePassword)
+		systemApiGroup.GET("/getAccountList", getAccountList)
+		systemApiGroup.GET("/getAllUserAndRoles", getAllUserAndRoles)
+		systemApiGroup.DELETE("/deleteAccount/:id", deleteAccount)
+
+		// 权限相关
+		systemApiGroup.GET("/getApiList", getApiList)
 	}
 }
 
