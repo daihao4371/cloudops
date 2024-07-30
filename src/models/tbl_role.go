@@ -1,9 +1,11 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"strconv"
 )
 
 type Role struct {
@@ -19,6 +21,20 @@ type Role struct {
 	Apis      []*Api  `json:"apis" gorm:"many2many:role_apis;"`                // 多对多
 	MenuIds   []int   `json:"menuIds" gorm:"-"`                                // 给前端用的
 	ApiIds    []int   `json:"apiIds" gorm:"-"`                                 // 给前端用的
+}
+
+func filterEmptyStrings(ids []interface{}) []int {
+	var filteredIds []int
+	for _, id := range ids {
+		if strId, ok := id.(string); ok && strId != "" {
+			if intId, err := strconv.Atoi(strId); err == nil {
+				filteredIds = append(filteredIds, intId)
+			}
+		} else if intId, ok := id.(int); ok {
+			filteredIds = append(filteredIds, intId)
+		}
+	}
+	return filteredIds
 }
 
 // 获取所有角色,用户和API
@@ -41,7 +57,7 @@ func GetRoleByRoleValue(roleValue string) (*Role, error) {
 }
 
 // 根据角色ID获取角色信息
-func GetRoleById(id int) (*Role, error) {
+func GetRoleById(id uint) (*Role, error) {
 	var dbrole Role
 	err := DB.Where("id = ?", id).Preload("Menus").First(&dbrole).Error
 	if err != nil {
@@ -78,4 +94,29 @@ func (obj *Role) UpdateMenus(meuns []*Menu) error {
 
 func (obj *Role) DeleteOne() error {
 	return DB.Delete(clause.Associations).Unscoped().Delete(obj).Error
+}
+
+func (obj *Role) UnmarshalJSON(data []byte) error {
+	var temp struct {
+		MenuIds []interface{} `json:"menuIds"`
+	}
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+
+	for _, id := range temp.MenuIds {
+		switch v := id.(type) {
+		case float64:
+			obj.MenuIds = append(obj.MenuIds, int(v))
+		case string:
+			menuId, err := strconv.Atoi(v)
+			if err != nil {
+				return err
+			}
+			obj.MenuIds = append(obj.MenuIds, menuId)
+		default:
+			return fmt.Errorf("unexpected type for MenuIds: %T", v)
+		}
+	}
+	return nil
 }

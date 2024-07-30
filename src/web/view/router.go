@@ -36,6 +36,7 @@ func ConfigRouter(r *gin.Engine) {
 		systemApiGroup.DELETE("/deleteMenu/:id", deleteMenu)
 		// 角色相关
 		systemApiGroup.GET("/getRoleListAll", getRoleListAll)
+		systemApiGroup.POST("/createRole", createRole)
 
 		// 用户相关
 		systemApiGroup.POST("/createAccount", createAccount)
@@ -46,8 +47,9 @@ func ConfigRouter(r *gin.Engine) {
 		systemApiGroup.GET("/getAllUserAndRoles", getAllUserAndRoles)
 		systemApiGroup.DELETE("/deleteAccount/:id", deleteAccount)
 
-		// 权限相关
+		// API相关
 		systemApiGroup.GET("/getApiList", getApiList)
+		systemApiGroup.GET("/getApiListAll", getApiListAll)
 	}
 }
 

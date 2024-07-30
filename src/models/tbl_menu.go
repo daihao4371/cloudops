@@ -44,9 +44,7 @@ type MenuMeta struct {
 
 // 根据ID查询菜单，并预加载关联的角色信息
 func GetMenuById(id int) (*Menu, error) {
-
 	var dbMenu Menu
-	//err := Db.Where("username = ?", userName).Preload("Roles").Joins("Menus").First(&dbUser).Error
 	err := DB.Where("id = ?", id).Preload("Roles").First(&dbMenu).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -55,7 +53,6 @@ func GetMenuById(id int) (*Menu, error) {
 		return nil, fmt.Errorf("数据库错误:%w", err)
 	}
 	return &dbMenu, nil
-
 }
 
 // UpdateOne 更新菜单

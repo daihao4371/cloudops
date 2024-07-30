@@ -98,13 +98,14 @@ func (obj *User) UpdateRoles(roles []*Role) error {
 func (obj *User) CreateOne() error {
 	return DB.Create(obj).Error
 }
+
 func GetUserAll() (users []*User, err error) {
 	err = DB.Preload("Roles").Find(&users).Error
 	return
 }
 
+// GetUserByName 根据用户名获取用户信息
 func GetUserByName(name string) (*User, error) {
-
 	var dbUser User
 	err := DB.Where("username = ?", name).Preload("Roles").First(&dbUser).Error
 	if err != nil {
@@ -118,18 +119,6 @@ func GetUserByName(name string) (*User, error) {
 }
 
 // 删除用户
-
 func (obj *User) DeleteOne() error {
 	return DB.Select(clause.Associations).Unscoped().Delete(obj).Error
 }
-
-/*func DeleteOneByID(userID uint) error {
-	result := DB.Unscoped().Where("id = ?", userID).Delete(&User{})
-	if result.Error != nil {
-		return fmt.Errorf("删除失败:%w", result.Error)
-	}
-	if result.RowsAffected == 0 {
-		return fmt.Errorf("没有数据被删除")
-	}
-	return nil
-}*/
