@@ -37,6 +37,8 @@ func ConfigRouter(r *gin.Engine) {
 		// 角色相关
 		systemApiGroup.GET("/getRoleListAll", getRoleListAll)
 		systemApiGroup.POST("/createRole", createRole)
+		systemApiGroup.POST("/setRoleStatus", setRoleStatus)
+		systemApiGroup.DELETE("/deleteRole/:id", deleteRole)
 
 		// 用户相关
 		systemApiGroup.POST("/createAccount", createAccount)

@@ -163,3 +163,101 @@ func createRole(c *gin.Context) {
 	// 返回包含详细信息的响应
 	common.OkWithDetailed(roleWithDetails, "创建成功", c)
 }
+
+// 更新角色状态
+func setRoleStatus(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	var reqRole struct {
+		Id     uint   `json:"id" validate:"required"`     // Id 改回 uint 类型
+		Status string `json:"status" validate:"required"` // 根据你的需要添加其他字段
+	}
+
+	err := c.ShouldBindJSON(&reqRole)
+	if err != nil {
+		sc.Logger.Error("解析请求失败", zap.Any("角色", reqRole), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 做字段校验，是否必填，范围是否正确
+	err = validate.Struct(reqRole)
+	if err != nil {
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"请求出错",
+				c,
+			)
+			return
+		}
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+	}
+
+	dbRole, err := models.GetRoleById(reqRole.Id)
+	if err != nil {
+		sc.Logger.Error("根据id找角色错误", zap.Any("角色", reqRole), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	dbRole.Status = reqRole.Status
+	err = dbRole.UpdateMenus(dbRole.Menus)
+	if err != nil {
+		sc.Logger.Error("更新角色和关联的菜单错误", zap.Any("角色", dbRole), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	common.OkWithMessage("更新成功", c)
+	//sc.Logger.Info("更新角色状态成功", zap.Any("角色", dbRole))
+}
+
+// 删除角色
+func deleteRole(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	// 获取路径参数中的id
+	id := c.Param("id")
+	sc.Logger.Info("删除角色", zap.String("id", id))
+
+	// 将id从字符串转换为整数
+	intVar, err := strconv.Atoi(id)
+	if err != nil {
+		sc.Logger.Error("ID 转换错误", zap.String("id", id), zap.Error(err))
+		common.FailWithMessage("ID 转换错误", c)
+		return
+	}
+
+	// 根据id查找角色
+	dbRole, err := models.GetRoleById(uint(intVar))
+	if err != nil {
+		sc.Logger.Error("根据ID找角色错误", zap.Uint("id", uint(intVar)), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 删除关联表 role_menus 中的记录
+	err = models.DB.Model(&dbRole).Association("Menus").Clear()
+	if err != nil {
+		sc.Logger.Error("删除关联表记录错误", zap.Uint("id", uint(intVar)), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 删除角色，明确设置模型
+	//err = models.DB.Model(&models.Role{}).Delete(dbRole, clause.Associations).Error
+	err = models.DB.Delete(&dbRole).Error
+	if err != nil {
+		sc.Logger.Error("根据ID删除角色错误", zap.Uint("id", uint(intVar)), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	common.OkWithMessage("删除成功", c)
+	sc.Logger.Info("删除角色成功", zap.Uint("id", uint(intVar)))
+}
+
+// 更新角色信息

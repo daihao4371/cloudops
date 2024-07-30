@@ -23,20 +23,6 @@ type Role struct {
 	ApiIds    []int   `json:"apiIds" gorm:"-"`                                 // 给前端用的
 }
 
-func filterEmptyStrings(ids []interface{}) []int {
-	var filteredIds []int
-	for _, id := range ids {
-		if strId, ok := id.(string); ok && strId != "" {
-			if intId, err := strconv.Atoi(strId); err == nil {
-				filteredIds = append(filteredIds, intId)
-			}
-		} else if intId, ok := id.(int); ok {
-			filteredIds = append(filteredIds, intId)
-		}
-	}
-	return filteredIds
-}
-
 // 获取所有角色,用户和API
 func GetRoleAll() (roles []*Role, err error) {
 	err = DB.Preload("Menus").Preload("Users").Preload("Apis").Find(&roles).Error
