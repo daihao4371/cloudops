@@ -1,4 +1,5 @@
 #### 目录说明
+
 ```shell
 .
 ├── cmd                   # 存放命令行程序的目录
@@ -29,39 +30,46 @@
         ├── view_alertwebhook # 警报 Webhook 视图代码
         └── view_server  # 服务器视图代码
 ```
+
 # CloudOps
+
 #### 介绍
+
 运维CMDB平台
 
 #### 软件架构
-软件架构说明
+- 语言：Golang
+- 数据库：MySQL
+- 缓存：Redis
+
+### 软件架构说明
+ - 基础底座
+ - 服务树
+ - CMDB
+ - 工单系统
+ - 任务执行中心
+ - Prometheus监控
+ - k8s管理平台
+ - CICD
 
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  待补充
+2.  开发中
+
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  待补充
+2.  开发中
 
 #### 参与贡献
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+1.  待补充
+2.  开发中
 
 
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 功能展示
+1.  待补充
+2.  开发中
