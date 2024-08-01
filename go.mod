@@ -3,6 +3,7 @@ module cloudops
 go 1.20
 
 require (
+	github.com/casbin/casbin/v2 v2.98.0
 	github.com/gammazero/workerpool v1.1.3
 	github.com/gin-contrib/requestid v1.0.2
 	github.com/gin-contrib/zap v1.1.3
@@ -22,6 +23,7 @@ require (
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/casbin/govaluate v1.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect

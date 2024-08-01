@@ -5,10 +5,13 @@ import (
 	"cloudops/src/common"
 	"cloudops/src/config"
 	"cloudops/src/models"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"io"
 	"strconv"
 )
@@ -261,3 +264,120 @@ func deleteRole(c *gin.Context) {
 }
 
 // 更新角色信息
+func updateRole(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+
+	var reqRole models.Role
+
+	// 读取并打印原始请求体
+	body, err := io.ReadAll(c.Request.Body)
+	/*		if err == nil {
+			sc.Logger.Info("原始请求体", zap.String("body", string(body)))
+		}*/
+	// 重置请求体以便后续操作
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+
+	// 手动绑定JSON，先绑定非嵌入字段
+	err = json.Unmarshal(body, &reqRole)
+	if err != nil {
+		sc.Logger.Error("解析更新角色请求失败", zap.Any("角色", reqRole), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 手动绑定Model中的ID字段
+	var data map[string]interface{}
+	err = json.Unmarshal(body, &data)
+	if err == nil {
+		if id, ok := data["id"].(float64); ok {
+			reqRole.ID = uint(id)
+		}
+	}
+
+	// 打印绑定后的角色信息
+	sc.Logger.Info("绑定后的角色信息", zap.Any("角色", reqRole))
+
+	// 检查ID是否有效
+	if reqRole.ID == 0 {
+		sc.Logger.Error("角色ID无效", zap.Uint("id", reqRole.ID))
+		common.FailWithMessage("角色ID无效", c)
+		return
+	}
+
+	role, err := models.GetRoleById(reqRole.ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			sc.Logger.Error("角色不存在", zap.Uint("id", reqRole.ID))
+			common.FailWithMessage("角色不存在", c)
+		} else {
+			sc.Logger.Error("根据ID找角色错误", zap.Uint("id", reqRole.ID), zap.Error(err))
+			common.FailWithMessage("数据库错误", c)
+		}
+		return
+	}
+
+	// 字段校验
+	err = validate.Struct(reqRole)
+	if err != nil {
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"请求出错",
+				c,
+			)
+			return
+		}
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+	}
+
+	menus := make([]*models.Menu, 0)
+	// 遍历角色menu列表，找到菜单
+	for _, menuId := range reqRole.MenuIds {
+		dbMenu, err := models.GetMenuById(menuId)
+		if err != nil {
+			sc.Logger.Error("根据ID找菜单错误", zap.Any("menu", reqRole), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+		menus = append(menus, dbMenu)
+	}
+
+	apis := make([]*models.Api, 0)
+	// 遍历角色apis列表，找到Apisid
+	for _, apiId := range reqRole.ApiIds {
+		dbApi, err := models.GetApiById(apiId)
+		if err != nil {
+			sc.Logger.Error("根据id找api错误", zap.Any("api", reqRole), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+		apis = append(apis, dbApi)
+	}
+
+	if len(menus) > 0 {
+		err = role.UpdateMenus(menus)
+		if err != nil {
+			msg := fmt.Sprintf("更新角色和关联的菜单错误 err:%v", err.Error())
+			sc.Logger.Error(msg, zap.Any("角色", reqRole), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+	}
+
+	if len(apis) > 0 {
+		err = role.UpdateApis(apis, sc)
+		if err != nil {
+			msg := fmt.Sprintf("更新角色和关联的api错误 err:%v", err.Error())
+			sc.Logger.Error(msg, zap.Any("角色", reqRole), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+	}
+
+	common.OkWithMessage("更新成功", c)
+	//sc.Logger.Info("更新角色成功", zap.Any("角色", reqRole))
+}

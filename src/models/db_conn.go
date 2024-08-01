@@ -2,13 +2,15 @@ package models
 
 import (
 	"cloudops/src/config"
+	"github.com/casbin/casbin/v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 var (
-	DB *gorm.DB
+	DB             *gorm.DB
+	casbinEnforcer *casbin.Enforcer
 )
 
 func InitDb(sc *config.ServerConfig) error {

@@ -1,8 +1,11 @@
 package models
 
 import (
+	"cloudops/src/config"
 	"encoding/json"
 	"fmt"
+	"github.com/gammazero/workerpool"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"strconv"
@@ -76,6 +79,77 @@ func (obj *Role) UpdateMenus(meuns []*Menu) error {
 		return fmt.Errorf("更新角色信息失败:%w,更新角色菜单失败:%w", err1, err2)
 	}
 
+}
+
+// 更新角色的API信息
+func (obj *Role) UpdateApis(apis []*Api, sc *config.ServerConfig) error {
+	err1 := DB.Where("id = ?", obj.ID).Updates(obj).Error
+	err2 := DB.Model(obj).Association("Apis").Replace(apis)
+	rules := [][]string{}
+	// 先获取所有的policy
+	wp := workerpool.New(100)
+
+	for _, api := range apis {
+		api := api
+		wp.Submit(func() {
+
+			oneRule := []string{
+				obj.RoleValue,
+				api.Path,
+				api.Method,
+			}
+			// 处理ALL的case
+			if api.Method == "ALL" {
+				methods := []string{
+					"GET",
+					"POST",
+					"DELETE",
+				}
+				for _, m := range methods {
+
+					// casbin先获取这个policy是否存在 = 判断这个3个值有没有权限
+					// 如果pass=true 代表存在就不需要再添加了
+
+					pass, err := CasbinCheckPermission(obj.RoleValue, api.Path, m)
+					if pass {
+						continue
+					}
+					_, err = CasbinAddOnePolicy(obj.RoleValue, api.Path, m)
+					if err != nil {
+						sc.Logger.Error("CasbinAddOnePolicy错误",
+							zap.Error(err),
+							zap.String("角色", obj.RoleValue),
+							zap.String("api.Path", api.Path),
+							zap.String("api.Method", api.Method),
+						)
+					}
+				}
+			} else {
+				pass, err := CasbinCheckPermission(obj.RoleValue, api.Path, api.Method)
+				if pass {
+					return
+				}
+				_, err = CasbinAddOnePolicy(obj.RoleValue, api.Path, api.Method)
+				if err != nil {
+					sc.Logger.Error("CasbinAddOnePolicy错误",
+						zap.Error(err),
+						zap.String("角色", obj.RoleValue),
+						zap.String("api.Path", api.Path),
+						zap.String("api.Method", api.Method),
+					)
+				}
+			}
+			rules = append(rules, oneRule)
+		})
+
+	}
+	wp.StopWait()
+
+	if err1 == nil && err2 == nil {
+		return nil
+	} else {
+		return fmt.Errorf("更新本体:%w 更新关联:%w", err1, err2)
+	}
 }
 
 func (obj *Role) DeleteOne() error {
