@@ -70,6 +70,7 @@ func getUserInfoAfterLogin(c *gin.Context) {
 	common.OkWithDetailed(dbUser, "ok", c)
 }
 
+// getPermCode 函数用于获取权限码
 func getPermCode(c *gin.Context) {
 	common.OkWithDetailed([]string{"2000", "4000", "6000"}, "获取权限码成功", c)
 }
@@ -103,6 +104,7 @@ func getPermCode(c *gin.Context) {
 		common.ReqBadFailWithMessage(err.Error(), c)
 	}
 */
+// accountExist 函数用于检查账户是否存在
 func accountExist(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验一下 menu字段
@@ -146,6 +148,7 @@ func accountExist(c *gin.Context) {
 	common.OkWithMessage("用户名不存在 可用", c)
 }
 
+// createAccount 函数用于创建用户
 func createAccount(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验一下 menu字段
@@ -201,6 +204,7 @@ func createAccount(c *gin.Context) {
 	common.OkWithMessage("创建成功", c)
 }
 
+// updateAccount 用于更新用户信息的函数
 func updateAccount(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验一下 menu字段
@@ -269,6 +273,7 @@ func updateAccount(c *gin.Context) {
 	common.OkWithMessage("创建成功", c)
 }
 
+// // getAccountList 函数用于获取用户列表
 func getAccountList(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 数据库中拿到所有的menu列表
@@ -285,11 +290,13 @@ func getAccountList(c *gin.Context) {
 	common.OkWithDetailed(resp, "获取用户列表成功", c)
 }
 
+// DefineUserOrGroup 结构体用于定义用户或用户组
 type DefineUserOrGroup struct {
 	Label string `json:"label"`
 	Value string `json:"value"`
 }
 
+// // getAllUserAndRoles 函数用于获取所有用户和角色信息
 func getAllUserAndRoles(c *gin.Context) {
 
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
@@ -415,6 +422,8 @@ func changePassword(c *gin.Context) {
 	common.OkWithMessage("密码修改成功", c)
 
 }
+
+// deleteAccount 函数用于删除指定ID的用户账户
 func deleteAccount(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验一下 menu字段

@@ -61,6 +61,7 @@ func GetUserByUserName(userName string) (*User, error) {
 	return &dbUser, nil
 }
 
+// GetUserById 根据用户ID获取用户信息
 func GetUserById(id int) (*User, error) {
 
 	var dbUser User
@@ -75,6 +76,7 @@ func GetUserById(id int) (*User, error) {
 
 }
 
+// UpdateOne 更新User对象的本体及其关联的角色
 func (obj *User) UpdateOne(roles []*Role) error {
 	err1 := DB.Where("id = ?", obj.ID).Updates(obj).Error
 	err2 := DB.Model(obj).Association("Roles").Replace(roles)
@@ -86,19 +88,25 @@ func (obj *User) UpdateOne(roles []*Role) error {
 
 }
 
+// FirstOrCreate 方法用于查询数据库中是否存在具有相同Username属性的User对象，
+// 如果存在则更新obj对象的属性值，否则在数据库中创建新的User对象。
+// 方法返回值为error类型，如果操作成功则返回nil，否则返回具体的错误信息。
 func (obj *User) FirstOrCreate() error {
 	return DB.Debug().Where(User{Username: obj.Username}).FirstOrCreate(obj).Error
 }
 
+// UpdateRoles 更新用户关联的角色
 func (obj *User) UpdateRoles(roles []*Role) error {
 	return DB.Model(obj).Association("Roles").Replace(roles)
 
 }
 
+// CreateOne 创建用户，并返回错误信息。
 func (obj *User) CreateOne() error {
 	return DB.Create(obj).Error
 }
 
+// // GetUserAll 获取数据库中获取所有用户及其关联的角色，并返回用户切片和错误信息。
 func GetUserAll() (users []*User, err error) {
 	err = DB.Preload("Roles").Find(&users).Error
 	return

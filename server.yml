@@ -1,13 +1,19 @@
+#  服务端口
 http_addr: 0.0.0.0:80
+# 日志路径
 log_path: ./logs/cloudops.log
+#  错误日志路径
 err_log_path: ./logs/cloudops-err.log
+#  日志级别：DEBUG, INFO, WARN, ERROR
 log_level: DEBUG
+#  jwt 配置
 jwt:
   singing_key: cloudops # 密码
   expire_time: 60m  # 有效时间
   buffer_time: 1m  # 临期时间
   issuer: cloudops # 签发人
 
+#  数据库相关配置和 SQL 语句
 mysql:
   dsn: root:123456@tcp(127.0.0.1:3306)/cloudops?charset=utf8&parseTime=True&loc=Local
 

@@ -12,13 +12,17 @@ import (
 	"strconv"
 )
 
+/*
+getMenuList 函数用于获取当前用户的菜单列表
+参数：
+
+	c *gin.Context：Gin框架的上下文对象
+
+返回值：
+
+	无，直接通过HTTP响应返回结果
+*/
 func getMenuList(c *gin.Context) {
-	// 拿到这个人用户 对应的role列表
-	// 	遍历 role列表 找到 Menu list
-	// 在拼装父子结构 返回的是数组 第一层 father 第2层children
-
-	// 我得拿到 userCliams
-
 	userName := c.MustGet(common.GIN_CTX_JWT_USER_NAME).(string)
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	dbUser, err := models.GetUserByUserName(userName)
@@ -145,6 +149,13 @@ func getMenuList(c *gin.Context) {
 	common.OkWithDetailed(finalMenus, "ok", c)
 }
 
+/*
+getMenuListAll 函数从数据库中获取所有的菜单列表，并返回给前端
+参数：
+c *gin.Context：gin框架的上下文对象
+返回值：
+无，通过HTTP响应返回结果
+*/
 func getMenuListAll(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 从数据库中获取所有的菜单
@@ -168,6 +179,7 @@ func getMenuListAll(c *gin.Context) {
 	common.OkWithDetailed(menus, "ok", c)
 }
 
+// 更新菜单
 func updateMenu(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验一下 menu字段
@@ -218,6 +230,7 @@ func updateMenu(c *gin.Context) {
 
 }
 
+// 创建菜单
 func createMenu(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 
@@ -259,6 +272,7 @@ func createMenu(c *gin.Context) {
 	common.OkWithMessage("创建成功", c)
 }
 
+// 删除菜单
 func deleteMenu(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 校验一下 menu字段
