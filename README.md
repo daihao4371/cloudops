@@ -19,7 +19,7 @@
     ├── common           # 公共模块和工具代码
     ├── config           # 配置相关代码
     ├── models           # 数据模型代码
-    ├── pbms             # PBMS（可能是 Protocol Buffers Message Schema）相关代码
+    ├── pbms             # PBMS（Protocol Buffers Message Schema）相关代码
     ├── rpc              # 远程过程调用（RPC）相关代码
     ├── src              # 源代码目录下的 src 目录（需要移除或合并内容）
     │   ├── agent        # 代理相关代码
