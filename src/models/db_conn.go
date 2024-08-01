@@ -13,6 +13,7 @@ var (
 	casbinEnforcer *casbin.Enforcer
 )
 
+// 初始化数据库连接
 func InitDb(sc *config.ServerConfig) error {
 	db, err := gorm.Open(
 		mysql.Open(sc.MySqlC.DSN),

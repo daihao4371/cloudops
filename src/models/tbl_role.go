@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// 角色表
 type Role struct {
 	Model             // 不用每次写ID 和 createAt了
 	OrderNo   int     `json:"orderNo" gorm:"comment:排序"`
@@ -152,10 +153,17 @@ func (obj *Role) UpdateApis(apis []*Api, sc *config.ServerConfig) error {
 	}
 }
 
+// DeleteOne 方法从数据库中删除Role实例obj。
 func (obj *Role) DeleteOne() error {
 	return DB.Delete(clause.Associations).Unscoped().Delete(obj).Error
 }
 
+/*
+UnmarshalJSON 实现了json.Unmarshaler接口，用于反序列化Role结构体中的MenuIds字段
+data: JSON格式数据
+返回值：
+error: 如果反序列化过程中发生错误，则返回相应的错误信息，否则返回nil
+*/
 func (obj *Role) UnmarshalJSON(data []byte) error {
 	var temp struct {
 		MenuIds []interface{} `json:"menuIds"`

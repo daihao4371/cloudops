@@ -16,6 +16,7 @@ import (
 	"strconv"
 )
 
+// 函数用于获取所有角色列表
 func getRoleListAll(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	// 从数据库中获取所有的菜单

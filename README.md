@@ -71,5 +71,28 @@
 
 
 #### 功能展示
-1.  待补充
-2.  开发中
+1. 系统管理
+
+   - 菜单管理
+
+   ![image-20240801224619260](https://p.ipic.vip/xxsfov.png)
+
+   - 用户管理
+
+   ![image-20240801224713351](https://p.ipic.vip/e6s1ax.png)
+
+   - 角色管理
+
+   ![image-20240801225116033](https://p.ipic.vip/5vvi0v.png)
+
+   - 修改密码
+
+   ![image-20240801225155661](https://p.ipic.vip/an7na2.png)
+
+   - API接口管理
+
+   ![image-20240801225255675](https://p.ipic.vip/1r7asj.png)
+
+更多功能正在持续开发中... 敬请期待
+
+2. 开发中
