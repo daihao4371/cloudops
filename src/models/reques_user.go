@@ -28,6 +28,6 @@ type AccountExistRequest struct {
 }
 
 type ChangePasswordRequest struct {
-	OldPassword string `json:"oldPassword"`
-	NewPassword string `json:"newPassword"`
+	OldPassword string `json:"passwordOld"`
+	NewPassword string `json:"passwordNew"`
 }

@@ -83,7 +83,7 @@ func (obj *User) UpdateOne(roles []*Role) error {
 	if err1 == nil && err2 == nil {
 		return nil
 	} else {
-		return fmt.Errorf("更新本体:w 更新关联:%w", err1, err2)
+		return fmt.Errorf("更新本体:%w 更新关联:%w", err1, err2)
 	}
 
 }

@@ -26,6 +26,7 @@ func ConfigRouter(r *gin.Engine) {
 		afterLoginApiGroup.GET("/getUserInfo", getUserInfoAfterLogin)
 		afterLoginApiGroup.GET("/getPermCode", getPermCode)
 	}
+	// 底座模块
 	systemApiGroup := afterLoginApiGroup.Group("/system")
 	{
 		// 菜单相关
@@ -34,6 +35,7 @@ func ConfigRouter(r *gin.Engine) {
 		systemApiGroup.POST("/updateMenu", updateMenu)
 		systemApiGroup.POST("/createMenu", createMenu)
 		systemApiGroup.DELETE("/deleteMenu/:id", deleteMenu)
+
 		// 角色相关
 		systemApiGroup.GET("/getRoleListAll", getRoleListAll)
 		systemApiGroup.POST("/createRole", createRole)

@@ -352,12 +352,6 @@ func getAllUserAndRoles(c *gin.Context) {
 
 // 修改密码
 func changePassword(c *gin.Context) {
-	// 拿到这个人用户 对应的role列表
-	// 	遍历 role列表 找到 Menu list
-	// 在拼装父子结构 返回的是数组 第一层 father 第2层children
-
-	// 我得拿到 userCliams
-
 	userName := c.MustGet(common.GIN_CTX_JWT_USER_NAME).(string)
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	dbUser, err := models.GetUserByUserName(userName)
@@ -369,7 +363,6 @@ func changePassword(c *gin.Context) {
 		return
 	}
 
-	// 校验一下 menu字段
 	var reqChange models.ChangePasswordRequest
 	err = c.ShouldBindJSON(&reqChange)
 	if err != nil {
@@ -378,14 +371,18 @@ func changePassword(c *gin.Context) {
 		return
 	}
 
-	// 在这里校验字段，是否必填，范围是否正确
+	// 检查 oldPassword 和 newPassword 是否为空
+	if reqChange.OldPassword == "" || reqChange.NewPassword == "" {
+		sc.Logger.Error("旧密码或新密码为空", zap.Any("用户", reqChange))
+		common.FailWithMessage("旧密码或新密码不能为空", c)
+		return
+	}
+
+	// 校验字段，是否必填，范围是否正确
 	err = validate.Struct(reqChange)
 	if err != nil {
-
-		// 这里为什么要判断错误是否是 ValidationErrors
 		if errors, ok := err.(validator.ValidationErrors); ok {
 			common.ReqBadFailWithWithDetailed(
-
 				gin.H{
 					"翻译前": err.Error(),
 					"翻译后": errors.Translate(trans),
@@ -397,30 +394,25 @@ func changePassword(c *gin.Context) {
 		}
 		common.ReqBadFailWithMessage(err.Error(), c)
 		return
-
 	}
 
-	// 先校验旧密码是否对
-	// 对比password
+	// 校验旧密码是否正确
 	ok := common.BcryptCheck(reqChange.OldPassword, dbUser.Password)
 	if !ok {
-		sc.Logger.Error("旧密码错误", zap.Any("用户", reqChange), zap.Error(err))
+		sc.Logger.Error("旧密码错误", zap.Any("用户", reqChange))
 		common.FailWithMessage("旧密码错误", c)
 		return
 	}
 
-	// 变更密码
-	// 密码我们要 加密处理
+	// 更新密码并加密处理
 	dbUser.Password = common.BcryptHash(reqChange.NewPassword)
 	err = dbUser.UpdateOne(dbUser.Roles)
-
 	if err != nil {
-		sc.Logger.Error("解析修改密码请求失败", zap.Any("用户", reqChange), zap.Error(err))
-		common.FailWithMessage(err.Error(), c)
+		sc.Logger.Error("修改密码时更新用户信息失败", zap.Any("用户", reqChange), zap.Error(err))
+		common.FailWithMessage("密码修改失败", c)
 		return
 	}
 	common.OkWithMessage("密码修改成功", c)
-
 }
 
 // deleteAccount 函数用于删除指定ID的用户账户
