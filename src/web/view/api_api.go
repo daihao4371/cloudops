@@ -6,9 +6,12 @@ import (
 	"cloudops/src/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
+	"time"
 )
 
+// 获取所有的api接口
 func getApiList(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	apis, err := models.GetApiAll()
@@ -63,7 +66,7 @@ func getApiList(c *gin.Context) {
 	common.OkWithDetailed(finalApis, "ok", c)
 }
 
-// 获取所有的api接口
+// 获取所有的API接口列表
 func getApiListAll(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	apis, err := models.GetApiAll()
@@ -81,4 +84,91 @@ func getApiListAll(c *gin.Context) {
 		api.Value = api.ID
 	}
 	common.OkWithDetailed(apis, "ok", c)
+}
+
+// createApi 创建api接口
+func createApi(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	var reqApi models.Api
+	err := c.ShouldBindJSON(&reqApi)
+	if err != nil {
+		sc.Logger.Error("解析新增reqApi请求失败", zap.Any("reqApi", reqApi), zap.Error(err))
+		common.ReqBadFailWithMessage(fmt.Sprintf("解析参数错误:%v", err.Error()), c)
+		return
+	}
+	// 字段校验，是否必填，范围是否正确
+	err = validate.Struct(reqApi)
+	if err != nil {
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"请求出错",
+				c,
+			)
+			return
+		}
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+	}
+	err = reqApi.CreateOne()
+	if err != nil {
+		sc.Logger.Error("新增api接口失败", zap.Any("reqApi", reqApi), zap.Error(err))
+		common.ReqBadFailWithMessage(fmt.Sprintf(err.Error()), c)
+		return
+	}
+	common.OkWithDetailed(reqApi, "新增成功", c)
+}
+
+// 更新api接口
+func updateApi(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	var reqApi models.Api
+	err := c.ShouldBindJSON(&reqApi)
+	if err != nil {
+		sc.Logger.Error("解析更新reqApi请求失败", zap.Any("reqApi", reqApi), zap.Error(err))
+		common.FailWithMessage(fmt.Sprintf("解析参数错误:%v", err.Error()), c)
+		return
+	}
+	// 字段校验，是否必填，范围是否正确
+	err = validate.Struct(reqApi)
+	if err != nil {
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"请求出错",
+				c,
+			)
+			return
+		}
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+	}
+	// 通过ID获取API对象
+	existingApi, err := models.GetApiById(int(reqApi.ID))
+	if err != nil {
+		sc.Logger.Error("根据id找api接口失败", zap.Any("reqApi", reqApi), zap.Error(err))
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+	}
+	// 更新现有API对象的字段，避免更新CreateAt
+	existingApi.Path = reqApi.Path
+	existingApi.Method = reqApi.Method
+	existingApi.Pid = reqApi.Pid
+	existingApi.Title = reqApi.Title
+	existingApi.Type = reqApi.Type
+	existingApi.UpdatedAt = time.Now()
+
+	err = existingApi.UpdateOne()
+	if err != nil {
+		sc.Logger.Error("更新api接口失败", zap.Any("reqApi", reqApi), zap.Error(err))
+		common.ReqBadFailWithMessage(fmt.Sprintf(err.Error()), c)
+		return
+	}
+	common.OkWithDetailed(existingApi, "更新成功", c)
 }

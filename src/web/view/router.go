@@ -55,6 +55,8 @@ func ConfigRouter(r *gin.Engine) {
 		// API相关
 		systemApiGroup.GET("/getApiList", getApiList)
 		systemApiGroup.GET("/getApiListAll", getApiListAll)
+		systemApiGroup.POST("/createApi", createApi)
+		systemApiGroup.POST("/updateApi", updateApi)
 	}
 }
 

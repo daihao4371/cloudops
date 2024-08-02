@@ -33,16 +33,16 @@ func GetApiAll() (objs []*Api, err error) {
 
 // GetApiById 根据 ID 获取 API 包括关联的角色信息
 func GetApiById(id int) (*Api, error) {
-	var dbObje Api
+	var dbObj Api
 	// 根据ID查询API，并预加载关联的角色信息
-	err := DB.Where("id = ?").Preload("Roles").First(&dbObje).Error
+	err := DB.Where("id = ?", id).Preload("Roles").First(&dbObj).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("api不存在")
 		}
 		return nil, fmt.Errorf("数据库错误:%w", err)
 	}
-	return &dbObje, nil
+	return &dbObj, nil
 }
 
 // GetApiByTitle 根据标题获取API记录，包括关联的角色信息
