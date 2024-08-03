@@ -174,12 +174,14 @@ func updateApi(c *gin.Context) {
 	common.OkWithDetailed(existingApi, "更新成功", c)
 }
 
+// deleteApi 删除api接口
 func deleteApi(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	id := c.Param("id")
 	sc.Logger.Info("删除api接口", zap.String("id", id))
 
 	//先去数据库中拿这个api接口
+	// 将字符串ID转换为整型
 	intVar, _ := strconv.Atoi(id)
 	dbApi, err := models.GetApiById(intVar)
 	if err != nil {
@@ -187,6 +189,7 @@ func deleteApi(c *gin.Context) {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
+	// 执行删除操作
 	err = dbApi.DeleteOne()
 	if err != nil {
 		sc.Logger.Error("根据ID删除api接口失败", zap.Any("api", id), zap.Error(err))

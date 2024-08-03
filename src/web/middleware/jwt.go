@@ -57,11 +57,11 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 			//c.Header("Authorization", "Bearer "+newToken)
 			c.Header("new-token", newToken)
 		} else {
-			sc.Logger.Info("token未过期，无需重新生成token",
-				zap.String("user", userClaims.Username),
-				zap.String("老token过期时间", userClaims.RegisteredClaims.ExpiresAt.String()),
-				zap.String("临期窗口 ", sc.JWTC.BufferDuration.String()),
-			)
+			/*			sc.Logger.Info("token未过期，无需重新生成token",
+						zap.String("user", userClaims.Username),
+						zap.String("老token过期时间", userClaims.RegisteredClaims.ExpiresAt.String()),
+						zap.String("临期窗口 ", sc.JWTC.BufferDuration.String()),
+					)*/
 		}
 
 		// 设置cliam 后续的处理逻辑就能拿到

@@ -23,16 +23,16 @@ DROP TABLE IF EXISTS `apis`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `apis` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  `path` varchar(50) DEFAULT NULL COMMENT '路由路径',
-  `method` varchar(50) DEFAULT NULL COMMENT 'http请求方法',
-  `pid` bigint(20) DEFAULT NULL COMMENT 'apiGroups 父级的id 为了给树用的',
-  `title` varchar(50) DEFAULT NULL COMMENT '名称',
-  `type` varchar(5) DEFAULT NULL COMMENT '类型 0=父级 1=子级',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_apis_title` (`title`)
+                        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                        `created_at` datetime(3) DEFAULT NULL,
+                        `updated_at` datetime(3) DEFAULT NULL,
+                        `path` varchar(50) DEFAULT NULL COMMENT '路由路径',
+                        `method` varchar(50) DEFAULT NULL COMMENT 'http请求方法',
+                        `pid` bigint(20) DEFAULT NULL COMMENT 'apiGroups 父级的id 为了给树用的',
+                        `title` varchar(50) DEFAULT NULL COMMENT '名称',
+                        `type` varchar(5) DEFAULT NULL COMMENT '类型 0=父级 1=子级',
+                        PRIMARY KEY (`id`),
+                        UNIQUE KEY `idx_apis_title` (`title`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,25 +54,25 @@ DROP TABLE IF EXISTS `menus`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `menus` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  `name` varchar(100) DEFAULT NULL COMMENT '名称',
-  `title` longtext COMMENT '名称',
-  `pid` bigint(20) DEFAULT NULL COMMENT '父级的id',
-  `parent_menu` longtext COMMENT '父级的id',
-  `icon` longtext COMMENT '图标',
-  `type` varchar(5) DEFAULT NULL COMMENT '类型 0=目录 1=子菜单',
-  `show` varchar(5) DEFAULT NULL COMMENT '类型 0=禁用 1=启用',
-  `order_no` bigint(20) DEFAULT NULL COMMENT '排序',
-  `component` varchar(50) DEFAULT NULL COMMENT '前端组件 菜单就是LAYOUT',
-  `redirect` varchar(50) DEFAULT NULL COMMENT '显示路径',
-  `path` varchar(50) DEFAULT NULL COMMENT '路由路径',
-  `remark` longtext COMMENT '用户描述',
-  `home_path` longtext COMMENT '登陆后的默认首页',
-  `status` varchar(191) DEFAULT '1' COMMENT '是否启用 0禁用 1启用',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_menus_name` (`name`)
+                         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                         `created_at` datetime(3) DEFAULT NULL,
+                         `updated_at` datetime(3) DEFAULT NULL,
+                         `name` varchar(100) DEFAULT NULL COMMENT '名称',
+                         `title` longtext COMMENT '名称',
+                         `pid` bigint(20) DEFAULT NULL COMMENT '父级的id',
+                         `parent_menu` longtext COMMENT '父级的id',
+                         `icon` longtext COMMENT '图标',
+                         `type` varchar(5) DEFAULT NULL COMMENT '类型 0=目录 1=子菜单',
+                         `show` varchar(5) DEFAULT NULL COMMENT '类型 0=禁用 1=启用',
+                         `order_no` bigint(20) DEFAULT NULL COMMENT '排序',
+                         `component` varchar(50) DEFAULT NULL COMMENT '前端组件 菜单就是LAYOUT',
+                         `redirect` varchar(50) DEFAULT NULL COMMENT '显示路径',
+                         `path` varchar(50) DEFAULT NULL COMMENT '路由路径',
+                         `remark` longtext COMMENT '用户描述',
+                         `home_path` longtext COMMENT '登陆后的默认首页',
+                         `status` varchar(191) DEFAULT '1' COMMENT '是否启用 0禁用 1启用',
+                         PRIMARY KEY (`id`),
+                         UNIQUE KEY `idx_menus_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -94,12 +94,12 @@ DROP TABLE IF EXISTS `role_apis`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `role_apis` (
-  `api_id` bigint(20) unsigned NOT NULL,
-  `role_id` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`api_id`,`role_id`),
-  KEY `fk_role_apis_role` (`role_id`),
-  CONSTRAINT `fk_role_apis_api` FOREIGN KEY (`api_id`) REFERENCES `apis` (`id`),
-  CONSTRAINT `fk_role_apis_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+                             `api_id` bigint(20) unsigned NOT NULL,
+                             `role_id` bigint(20) unsigned NOT NULL,
+                             PRIMARY KEY (`api_id`,`role_id`),
+                             KEY `fk_role_apis_role` (`role_id`),
+                             CONSTRAINT `fk_role_apis_api` FOREIGN KEY (`api_id`) REFERENCES `apis` (`id`),
+                             CONSTRAINT `fk_role_apis_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -121,12 +121,12 @@ DROP TABLE IF EXISTS `role_menus`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `role_menus` (
-  `menu_id` bigint(20) unsigned NOT NULL,
-  `role_id` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`menu_id`,`role_id`),
-  KEY `fk_role_menus_role` (`role_id`),
-  CONSTRAINT `fk_role_menus_menu` FOREIGN KEY (`menu_id`) REFERENCES `menus` (`id`),
-  CONSTRAINT `fk_role_menus_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
+                              `menu_id` bigint(20) unsigned NOT NULL,
+                              `role_id` bigint(20) unsigned NOT NULL,
+                              PRIMARY KEY (`menu_id`,`role_id`),
+                              KEY `fk_role_menus_role` (`role_id`),
+                              CONSTRAINT `fk_role_menus_menu` FOREIGN KEY (`menu_id`) REFERENCES `menus` (`id`),
+                              CONSTRAINT `fk_role_menus_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -136,7 +136,7 @@ CREATE TABLE `role_menus` (
 
 LOCK TABLES `role_menus` WRITE;
 /*!40000 ALTER TABLE `role_menus` DISABLE KEYS */;
-INSERT INTO `role_menus` VALUES (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),(13,1),(14,1),(15,1),(16,1),(17,1),(18,1),(19,1),(20,1),(21,1),(22,1),(23,1),(24,1),(25,1),(26,1),(27,1),(28,1),(29,1),(30,1),(31,1),(32,1),(33,1),(34,1),(35,1),(36,1),(37,1),(38,1),(39,1),(40,1),(41,1),(42,1),(43,1),(44,1),(45,1),(46,1),(47,1),(48,1),(49,1),(50,1),(51,1),(52,1),(53,1),(54,1),(55,1),(56,1),(57,1),(58,1),(59,1),(60,1),(61,1),(62,1),(63,1),(64,1),(65,1),(66,1),(16,2),(17,2),(18,2),(19,2),(20,2),(21,2),(22,2),(23,2),(24,2),(25,2),(26,2),(27,2),(28,2),(29,2),(30,2),(31,2),(32,2),(33,2),(34,2),(35,2),(36,2),(37,2),(38,2),(39,2),(40,2),(54,2),(55,2),(56,2),(57,2),(58,2),(59,2),(60,2),(61,2),(62,2),(63,2),(64,2),(65,2),(66,2),(16,4),(17,4),(18,4),(19,4),(20,4),(21,4),(22,4),(23,4),(24,4),(41,4),(42,4),(43,4),(44,4),(45,4),(46,4),(47,4),(48,4),(49,4),(50,4),(51,4),(52,4),(53,4);
+INSERT INTO `role_menus` VALUES (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),(13,1),(14,1),(15,1),(16,1),(17,1),(18,1),(19,1),(20,1),(21,1),(22,1),(23,1),(24,1),(25,1),(26,1),(27,1),(28,1),(29,1),(30,1),(31,1),(32,1),(33,1),(34,1),(35,1),(36,1),(37,1),(38,1),(39,1),(40,1),(41,1),(42,1),(43,1),(44,1),(45,1),(46,1),(47,1),(48,1),(49,1),(50,1),(51,1),(52,1),(53,1),(54,1),(55,1),(56,1),(57,1),(58,1),(59,1),(60,1),(61,1),(62,1),(63,1),(64,1),(65,1),(66,1),(16,2),(17,2),(18,2),(19,2),(20,2),(21,2),(22,2),(23,2),(24,2),(25,2),(26,2),(27,2),(28,2),(29,2),(30,2),(31,2),(32,2),(33,2),(34,2),(35,2),(36,2),(37,2),(38,2),(39,2),(40,2),(54,2),(55,2),(56,2),(57,2),(58,2),(59,2),(60,2),(61,2),(62,2),(63,2),(64,2),(65,2),(66,2),(16,4),(17,4),(18,4),(19,4),(20,4),(21,4),(22,4),(23,4),(24,4),(41,4),(42,4),(43,4),(44,4),(45,4),(46,4),(47,4),(48,4),(49,4),(50,4),(51,4),(52,4),(53,4),(10,8),(11,8),(12,8),(13,8),(14,8),(10,9),(11,9),(12,9),(13,9),(14,9);
 /*!40000 ALTER TABLE `role_menus` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -148,19 +148,19 @@ DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `roles` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  `order_no` bigint(20) DEFAULT NULL COMMENT '排序',
-  `role_name` varchar(100) DEFAULT NULL COMMENT '角色中文名称',
-  `role_value` varchar(100) DEFAULT NULL COMMENT '角色值',
-  `remark` longtext COMMENT '用户描述',
-  `home_path` longtext COMMENT '登陆后的默认首页',
-  `status` varchar(191) DEFAULT '1' COMMENT '角色是否被冻结 1正常 2冻结',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_roles_role_name` (`role_name`),
-  UNIQUE KEY `idx_roles_role_value` (`role_value`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+                         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                         `created_at` datetime(3) DEFAULT NULL,
+                         `updated_at` datetime(3) DEFAULT NULL,
+                         `order_no` bigint(20) DEFAULT NULL COMMENT '排序',
+                         `role_name` varchar(100) DEFAULT NULL COMMENT '角色中文名称',
+                         `role_value` varchar(100) DEFAULT NULL COMMENT '角色值',
+                         `remark` longtext COMMENT '用户描述',
+                         `home_path` longtext COMMENT '登陆后的默认首页',
+                         `status` varchar(191) DEFAULT '1' COMMENT '角色是否被冻结 1正常 2冻结',
+                         PRIMARY KEY (`id`),
+                         UNIQUE KEY `idx_roles_role_name` (`role_name`),
+                         UNIQUE KEY `idx_roles_role_value` (`role_value`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -169,7 +169,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'2024-07-24 21:50:48.487','2024-07-24 21:50:48.487',0,'超级管理员','super','','','1'),(2,'2024-07-24 21:50:48.501','2024-07-28 08:41:32.539',0,'普通运维','ops','','','1'),(3,'2024-07-24 21:50:48.507','2024-07-24 21:50:48.507',0,'后台机器人','bot_super','','','1'),(4,'2024-07-24 21:50:48.509','2024-07-28 08:41:32.547',0,'k8s集群管理员','k8s_admin','','','1');
+INSERT INTO `roles` VALUES (1,'2024-07-24 21:50:48.487','2024-07-24 21:50:48.487',0,'超级管理员','super','','','1'),(2,'2024-07-24 21:50:48.501','2024-08-03 16:09:06.260',0,'普通运维','ops','','','1'),(3,'2024-07-24 21:50:48.507','2024-07-24 21:50:48.507',0,'后台机器人','bot_super','','','1'),(4,'2024-07-24 21:50:48.509','2024-08-03 16:09:06.266',0,'k8s集群管理员','k8s_admin','','','1'),(8,'2024-08-03 16:25:20.509','2024-08-03 16:25:25.185',0,'测试用户','test','','','1'),(9,'2024-08-03 16:25:44.820','2024-08-03 16:25:52.274',0,'开发','dev','','','1');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -181,12 +181,12 @@ DROP TABLE IF EXISTS `user_roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_roles` (
-  `role_id` bigint(20) unsigned NOT NULL,
-  `user_id` bigint(20) unsigned NOT NULL,
-  PRIMARY KEY (`role_id`,`user_id`),
-  KEY `fk_user_roles_user` (`user_id`),
-  CONSTRAINT `fk_user_roles_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`),
-  CONSTRAINT `fk_user_roles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+                              `role_id` bigint(20) unsigned NOT NULL,
+                              `user_id` bigint(20) unsigned NOT NULL,
+                              PRIMARY KEY (`role_id`,`user_id`),
+                              KEY `fk_user_roles_user` (`user_id`),
+                              CONSTRAINT `fk_user_roles_role` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`),
+                              CONSTRAINT `fk_user_roles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -196,7 +196,7 @@ CREATE TABLE `user_roles` (
 
 LOCK TABLES `user_roles` WRITE;
 /*!40000 ALTER TABLE `user_roles` DISABLE KEYS */;
-INSERT INTO `user_roles` VALUES (1,1),(2,1),(3,3),(4,4);
+INSERT INTO `user_roles` VALUES (1,1),(2,1),(2,2),(3,3),(4,4);
 /*!40000 ALTER TABLE `user_roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -208,23 +208,23 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-  `username` varchar(100) DEFAULT NULL COMMENT '用户登录名',
-  `password` longtext COMMENT '用户登录密码',
-  `real_name` varchar(100) DEFAULT NULL COMMENT '用户昵称 中文名',
-  `desc` longtext COMMENT '用户描述',
-  `mobile` longtext COMMENT '手机号',
-  `fei_shu_user_id` longtext COMMENT '飞书userid  获取方式请看 https://open.feishu.cn/document/home/user-identity-introduction/open-id',
-  `account_type` bigint(20) DEFAULT '1' COMMENT '用户是否是服务账号 1普通用户 2服务账号',
-  `service_account_token` longtext,
-  `home_path` longtext COMMENT '登陆后的默认首页',
-  `enable` bigint(20) DEFAULT '1' COMMENT '用户是否被冻结 1正常 2冻结',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_users_real_name` (`real_name`),
-  UNIQUE KEY `idx_users_username` (`username`)
+                         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                         `created_at` datetime(3) DEFAULT NULL,
+                         `updated_at` datetime(3) DEFAULT NULL,
+                         `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                         `username` varchar(100) DEFAULT NULL COMMENT '用户登录名',
+                         `password` longtext COMMENT '用户登录密码',
+                         `real_name` varchar(100) DEFAULT NULL COMMENT '用户昵称 中文名',
+                         `desc` longtext COMMENT '用户描述',
+                         `mobile` longtext COMMENT '手机号',
+                         `fei_shu_user_id` longtext COMMENT '飞书userid  获取方式请看 https://open.feishu.cn/document/home/user-identity-introduction/open-id',
+                         `account_type` bigint(20) DEFAULT '1' COMMENT '用户是否是服务账号 1普通用户 2服务账号',
+                         `service_account_token` longtext,
+                         `home_path` longtext COMMENT '登陆后的默认首页',
+                         `enable` bigint(20) DEFAULT '1' COMMENT '用户是否被冻结 1正常 2冻结',
+                         PRIMARY KEY (`id`),
+                         UNIQUE KEY `idx_users_real_name` (`real_name`),
+                         UNIQUE KEY `idx_users_username` (`username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -234,7 +234,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'2024-07-24 21:50:48.486','2024-07-27 20:26:31.909',0,'admin','$2a$10$BWCka/k2FSLHXurmEngJ6Oe2jxhywuzle7UOn.4XDidSbHSVVzH2q','花海','','15810947075','6d31gdf4',1,'','/system/account',1),(3,'2024-07-24 21:50:48.507','2024-07-24 21:50:48.507',0,'auto_order_robot','$2a$10$sC9FwqZf/t3EQcA6NxH/GuvX7DIrHyqMeZUdbIwi6U/GTwerjejjC','自动工单执行机器人','','15810947075','6d31gdf4',1,'','/system/account',1),(4,'2024-07-24 21:50:48.509','2024-07-24 21:50:48.509',0,'k8s_admin_01','$2a$10$bntI4mzlizk/7o7O68245OJwfFl9rWZHlszd5LiFdtJ2zAm5p8gru','k8s管理员','','15810947075','6d31gdf4',1,'','/k8s/cluster',1);
+INSERT INTO `users` VALUES (1,'2024-07-24 21:50:48.486','2024-07-27 20:26:31.909',0,'admin','$2a$10$BWCka/k2FSLHXurmEngJ6Oe2jxhywuzle7UOn.4XDidSbHSVVzH2q','花海','','15810947075','6d31gdf4',1,'','/system/account',1),(2,'2024-07-24 21:50:48.500','2024-07-27 20:24:55.884',0,'test','$2a$10$HmvS0hXZICjg2eajOKhB5O1PHsWJiqRJbaQKAmiaulFozCfXb5YOq','狗子','','15810947075','38g18781',1,'','/system/account',1),(3,'2024-07-24 21:50:48.507','2024-07-24 21:50:48.507',0,'auto_order_robot','$2a$10$sC9FwqZf/t3EQcA6NxH/GuvX7DIrHyqMeZUdbIwi6U/GTwerjejjC','自动工单执行机器人','','15810947075','6d31gdf4',1,'','/system/account',1),(4,'2024-07-24 21:50:48.509','2024-07-24 21:50:48.509',0,'k8s_admin_01','$2a$10$bntI4mzlizk/7o7O68245OJwfFl9rWZHlszd5LiFdtJ2zAm5p8gru','k8s管理员','','15810947075','6d31gdf4',1,'','/k8s/cluster',1),(5,'2024-07-24 21:50:48.513','2024-07-24 21:50:48.513',0,'cicd01','','','','','',2,'abcd','',1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -247,4 +247,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-07-28 16:21:36
+-- Dump completed on 2024-08-03 16:26:01
