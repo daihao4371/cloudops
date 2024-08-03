@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
+	"strconv"
 	"time"
 )
 
@@ -171,4 +172,25 @@ func updateApi(c *gin.Context) {
 		return
 	}
 	common.OkWithDetailed(existingApi, "更新成功", c)
+}
+
+func deleteApi(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	id := c.Param("id")
+	sc.Logger.Info("删除api接口", zap.String("id", id))
+
+	//先去数据库中拿这个api接口
+	intVar, _ := strconv.Atoi(id)
+	dbApi, err := models.GetApiById(intVar)
+	if err != nil {
+		sc.Logger.Error("根据id找api接口失败", zap.Any("api", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	err = dbApi.DeleteOne()
+	if err != nil {
+		sc.Logger.Error("根据ID删除api接口失败", zap.Any("api", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+	}
+	common.OkWithDetailed(dbApi, "删除成功", c)
 }

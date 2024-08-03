@@ -57,6 +57,7 @@ func ConfigRouter(r *gin.Engine) {
 		systemApiGroup.GET("/getApiListAll", getApiListAll)
 		systemApiGroup.POST("/createApi", createApi)
 		systemApiGroup.POST("/updateApi", updateApi)
+		systemApiGroup.DELETE("/deleteApi/:id", deleteApi)
 	}
 }
 
