@@ -233,7 +233,6 @@ func updateMenu(c *gin.Context) {
 // 创建菜单
 func createMenu(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
-
 	// 校验一下 menu 字段
 	var reqMenu models.Menu
 	err := c.ShouldBindJSON(&reqMenu)

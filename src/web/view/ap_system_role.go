@@ -82,6 +82,8 @@ func createRole(c *gin.Context) {
 		RoleValue string        `json:"roleValue"`
 		MenuIds   []interface{} `json:"menuIds"`
 		ApiIds    []interface{} `json:"apiIds"`
+		Remark    string        `json:"remark"`
+		HomePath  string        `json:"homePath"`
 	}
 
 	err = c.ShouldBindJSON(&reqRole)
@@ -115,6 +117,8 @@ func createRole(c *gin.Context) {
 		RoleValue: reqRole.RoleValue,
 		MenuIds:   menuIds,
 		ApiIds:    apiIds,
+		Remark:    reqRole.Remark,
+		HomePath:  reqRole.HomePath,
 	}
 
 	// 在这里校验字段，是否必填，范围是否正确
@@ -272,10 +276,6 @@ func updateRole(c *gin.Context) {
 
 	// 读取并打印原始请求体
 	body, err := io.ReadAll(c.Request.Body)
-	/*		if err == nil {
-			sc.Logger.Info("原始请求体", zap.String("body", string(body)))
-		}*/
-	// 重置请求体以便后续操作
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	// 手动绑定JSON，先绑定非嵌入字段
@@ -295,16 +295,15 @@ func updateRole(c *gin.Context) {
 		}
 	}
 
-	// 打印绑定后的角色信息
 	sc.Logger.Info("绑定后的角色信息", zap.Any("角色", reqRole))
 
-	// 检查ID是否有效
 	if reqRole.ID == 0 {
 		sc.Logger.Error("角色ID无效", zap.Uint("id", reqRole.ID))
 		common.FailWithMessage("角色ID无效", c)
 		return
 	}
 
+	// 从数据库获取当前角色信息
 	role, err := models.GetRoleById(reqRole.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -317,26 +316,25 @@ func updateRole(c *gin.Context) {
 		return
 	}
 
-	// 字段校验
-	err = validate.Struct(reqRole)
-	if err != nil {
-		if errors, ok := err.(validator.ValidationErrors); ok {
-			common.ReqBadFailWithWithDetailed(
-				gin.H{
-					"翻译前": err.Error(),
-					"翻译后": errors.Translate(trans),
-				},
-				"请求出错",
-				c,
-			)
-			return
-		}
-		common.ReqBadFailWithMessage(err.Error(), c)
-		return
+	// 更新需要更新的字段，保留其他字段的原值
+	if v, ok := data["status"]; ok {
+		role.Status = v.(string)
+	}
+	if v, ok := data["roleName"]; ok {
+		role.RoleName = v.(string)
+	}
+	if v, ok := data["roleValue"]; ok {
+		role.RoleValue = v.(string)
+	}
+	if v, ok := data["remark"]; ok {
+		role.Remark = v.(string)
+	}
+	if v, ok := data["homePath"]; ok {
+		role.HomePath = v.(string)
 	}
 
+	// 更新菜单和API信息
 	menus := make([]*models.Menu, 0)
-	// 遍历角色menu列表，找到菜单
 	for _, menuId := range reqRole.MenuIds {
 		dbMenu, err := models.GetMenuById(menuId)
 		if err != nil {
@@ -348,22 +346,21 @@ func updateRole(c *gin.Context) {
 	}
 
 	apis := make([]*models.Api, 0)
-	// 遍历角色apis列表，找到Apisid
 	for _, apiId := range reqRole.ApiIds {
 		dbApi, err := models.GetApiById(apiId)
 		if err != nil {
-			sc.Logger.Error("根据id找api错误", zap.Any("api", reqRole), zap.Error(err))
+			sc.Logger.Error("根据ID找API错误", zap.Any("api", reqRole), zap.Error(err))
 			common.FailWithMessage(err.Error(), c)
 			return
 		}
 		apis = append(apis, dbApi)
 	}
 
+	// 如果菜单或API列表有更新，执行更新操作
 	if len(menus) > 0 {
 		err = role.UpdateMenus(menus)
 		if err != nil {
-			msg := fmt.Sprintf("更新角色和关联的菜单错误 err:%v", err.Error())
-			sc.Logger.Error(msg, zap.Any("角色", reqRole), zap.Error(err))
+			sc.Logger.Error("更新角色和关联的菜单错误", zap.Any("角色", reqRole), zap.Error(err))
 			common.FailWithMessage(err.Error(), c)
 			return
 		}
@@ -372,13 +369,19 @@ func updateRole(c *gin.Context) {
 	if len(apis) > 0 {
 		err = role.UpdateApis(apis, sc)
 		if err != nil {
-			msg := fmt.Sprintf("更新角色和关联的api错误 err:%v", err.Error())
-			sc.Logger.Error(msg, zap.Any("角色", reqRole), zap.Error(err))
+			sc.Logger.Error("更新角色和关联的API错误", zap.Any("角色", reqRole), zap.Error(err))
 			common.FailWithMessage(err.Error(), c)
 			return
 		}
 	}
 
+	// 保存更新后的角色信息
+	err = models.DB.Save(&role).Error
+	if err != nil {
+		sc.Logger.Error("保存更新后的角色信息失败", zap.Any("角色", reqRole), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
 	common.OkWithMessage("更新成功", c)
-	//sc.Logger.Info("更新角色成功", zap.Any("角色", reqRole))
 }

@@ -54,9 +54,7 @@ func UserLogin(c *gin.Context) {
 
 // 登录以后获取用户信息
 func getUserInfoAfterLogin(c *gin.Context) {
-
 	// 我得拿到 userCliams
-
 	userName := c.MustGet(common.GIN_CTX_JWT_USER_NAME).(string)
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 	dbUser, err := models.GetUserByUserName(userName)
@@ -298,11 +296,8 @@ type DefineUserOrGroup struct {
 
 // // getAllUserAndRoles 函数用于获取所有用户和角色信息
 func getAllUserAndRoles(c *gin.Context) {
-
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
-
 	// 	数据库中拿到所有的menu列表
-
 	users, err := models.GetUserAll()
 	if err != nil {
 		sc.Logger.Error("去数据库中拿所有的用户错误",

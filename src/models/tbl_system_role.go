@@ -72,14 +72,9 @@ func (obj *Role) UpdateMenus(meuns []*Menu) error {
 	err2 := DB.Model(&obj).Association("Menus").Replace(meuns)
 	if err1 == nil && err2 == nil {
 		return nil
-	} else if err1 != nil && err2 == nil {
-		return fmt.Errorf("更新角色信息失败:%w", err1)
-	} else if err1 == nil && err2 != nil {
-		return fmt.Errorf("更新角色菜单失败:%w", err2)
 	} else {
-		return fmt.Errorf("更新角色信息失败:%w,更新角色菜单失败:%w", err1, err2)
+		return fmt.Errorf("更新本体:w 更新关联:%w", err1, err2)
 	}
-
 }
 
 // 更新角色的API信息
