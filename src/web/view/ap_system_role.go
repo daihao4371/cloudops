@@ -269,118 +269,121 @@ func deleteRole(c *gin.Context) {
 }
 
 // 更新角色信息
+// todo: 希望当字段为空时不更新数据库中的相应字段，但也要确保字段为非空值时进行更新。
 func updateRole(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
 
-	var reqRole models.Role
-
 	// 读取并打印原始请求体
 	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		sc.Logger.Error("读取请求体失败", zap.Error(err))
+		common.FailWithMessage("读取请求体失败", c)
+		return
+	}
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 
-	// 手动绑定JSON，先绑定非嵌入字段
-	err = json.Unmarshal(body, &reqRole)
+	// 使用 map 绑定 JSON 数据
+	var data map[string]interface{}
+	err = json.Unmarshal(body, &data)
 	if err != nil {
-		sc.Logger.Error("解析更新角色请求失败", zap.Any("角色", reqRole), zap.Error(err))
-		common.FailWithMessage(err.Error(), c)
+		sc.Logger.Error("解析更新角色请求失败", zap.Any("请求体", string(body)), zap.Error(err))
+		common.FailWithMessage("解析更新角色请求失败", c)
 		return
 	}
 
-	// 手动绑定Model中的ID字段
-	var data map[string]interface{}
-	err = json.Unmarshal(body, &data)
-	if err == nil {
-		if id, ok := data["id"].(float64); ok {
-			reqRole.ID = uint(id)
-		}
-	}
-
-	sc.Logger.Info("绑定后的角色信息", zap.Any("角色", reqRole))
-
-	if reqRole.ID == 0 {
-		sc.Logger.Error("角色ID无效", zap.Uint("id", reqRole.ID))
+	// 确保 ID 存在并且有效
+	id, ok := data["id"].(float64)
+	if !ok || id == 0 {
+		sc.Logger.Error("角色ID无效", zap.Float64("id", id))
 		common.FailWithMessage("角色ID无效", c)
 		return
 	}
 
 	// 从数据库获取当前角色信息
-	role, err := models.GetRoleById(reqRole.ID)
+	role, err := models.GetRoleById(uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			sc.Logger.Error("角色不存在", zap.Uint("id", reqRole.ID))
+			sc.Logger.Error("角色不存在", zap.Uint("id", uint(id)))
 			common.FailWithMessage("角色不存在", c)
 		} else {
-			sc.Logger.Error("根据ID找角色错误", zap.Uint("id", reqRole.ID), zap.Error(err))
+			sc.Logger.Error("根据ID找角色错误", zap.Uint("id", uint(id)), zap.Error(err))
 			common.FailWithMessage("数据库错误", c)
 		}
 		return
 	}
 
-	// 更新需要更新的字段，保留其他字段的原值
-	if v, ok := data["status"]; ok {
-		role.Status = v.(string)
+	// 获取更新字段
+	updateFields := map[string]interface{}{
+		"role_name":  data["roleName"],
+		"role_value": data["roleValue"],
+		"status":     data["status"],
+		"remark":     data["remark"], // 确保即使为空字符串也包含在更新中
 	}
-	if v, ok := data["roleName"]; ok {
-		role.RoleName = v.(string)
-	}
-	if v, ok := data["roleValue"]; ok {
-		role.RoleValue = v.(string)
-	}
-	if v, ok := data["remark"]; ok {
-		role.Remark = v.(string)
-	}
-	if v, ok := data["homePath"]; ok {
-		role.HomePath = v.(string)
+
+	// 调试输出
+	sc.Logger.Info("准备更新字段", zap.Any("updateFields", updateFields))
+
+	// 使用 map 更新角色数据
+	err = models.DB.Model(&role).Updates(updateFields).Error
+	if err != nil {
+		sc.Logger.Error("保存更新后的角色信息失败", zap.Any("角色数据", updateFields), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
 	}
 
 	// 更新菜单和API信息
 	menus := make([]*models.Menu, 0)
-	for _, menuId := range reqRole.MenuIds {
-		dbMenu, err := models.GetMenuById(menuId)
-		if err != nil {
-			sc.Logger.Error("根据ID找菜单错误", zap.Any("menu", reqRole), zap.Error(err))
-			common.FailWithMessage(err.Error(), c)
-			return
+	if menuIds, ok := data["menuIds"].([]interface{}); ok {
+		for _, menuId := range menuIds {
+			id, ok := menuId.(float64)
+			if !ok {
+				continue
+			}
+			dbMenu, err := models.GetMenuById(int(id))
+			if err != nil {
+				sc.Logger.Error("根据ID找菜单错误", zap.Float64("menuId", id), zap.Error(err))
+				common.FailWithMessage(err.Error(), c)
+				return
+			}
+			menus = append(menus, dbMenu)
 		}
-		menus = append(menus, dbMenu)
 	}
 
 	apis := make([]*models.Api, 0)
-	for _, apiId := range reqRole.ApiIds {
-		dbApi, err := models.GetApiById(apiId)
-		if err != nil {
-			sc.Logger.Error("根据ID找API错误", zap.Any("api", reqRole), zap.Error(err))
-			common.FailWithMessage(err.Error(), c)
-			return
+	if apiIds, ok := data["apiIds"].([]interface{}); ok {
+		for _, apiId := range apiIds {
+			id, ok := apiId.(float64)
+			if !ok {
+				continue
+			}
+			dbApi, err := models.GetApiById(int(id))
+			if err != nil {
+				sc.Logger.Error("根据ID找API错误", zap.Float64("apiId", id), zap.Error(err))
+				common.FailWithMessage(err.Error(), c)
+				return
+			}
+			apis = append(apis, dbApi)
 		}
-		apis = append(apis, dbApi)
 	}
 
-	// 如果菜单或API列表有更新，执行更新操作
+	// 更新角色和关联的菜单信息
 	if len(menus) > 0 {
-		err = role.UpdateMenus(menus)
+		err = role.UpdateMenusRemark(menus)
 		if err != nil {
-			sc.Logger.Error("更新角色和关联的菜单错误", zap.Any("角色", reqRole), zap.Error(err))
+			sc.Logger.Error("更新角色和关联的菜单错误", zap.Any("角色数据", updateFields), zap.Error(err))
 			common.FailWithMessage(err.Error(), c)
 			return
 		}
 	}
 
+	// 更新角色和关联的API信息
 	if len(apis) > 0 {
 		err = role.UpdateApis(apis, sc)
 		if err != nil {
-			sc.Logger.Error("更新角色和关联的API错误", zap.Any("角色", reqRole), zap.Error(err))
+			sc.Logger.Error("更新角色和关联的API错误", zap.Any("角色数据", updateFields), zap.Error(err))
 			common.FailWithMessage(err.Error(), c)
 			return
 		}
-	}
-
-	// 保存更新后的角色信息
-	err = models.DB.Save(&role).Error
-	if err != nil {
-		sc.Logger.Error("保存更新后的角色信息失败", zap.Any("角色", reqRole), zap.Error(err))
-		common.FailWithMessage(err.Error(), c)
-		return
 	}
 
 	common.OkWithMessage("更新成功", c)

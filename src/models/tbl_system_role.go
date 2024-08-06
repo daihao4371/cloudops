@@ -77,6 +77,21 @@ func (obj *Role) UpdateMenus(meuns []*Menu) error {
 	}
 }
 
+// 强制更新remark
+func (obj *Role) UpdateMenusRemark(menus []*Menu) error {
+	// 强制更新remark字段，即使为空
+	err1 := DB.Model(&obj).Update("remark", obj.Remark).Error
+
+	// 更新角色菜单
+	err2 := DB.Model(&obj).Association("Menus").Replace(menus)
+
+	if err1 == nil && err2 == nil {
+		return nil
+	} else {
+		return fmt.Errorf("更新remark: %v, 更新关联菜单: %v", err1, err2)
+	}
+}
+
 // 更新角色的API信息
 func (obj *Role) UpdateApis(apis []*Api, sc *config.ServerConfig) error {
 	err1 := DB.Where("id = ?", obj.ID).Updates(obj).Error
