@@ -321,7 +321,7 @@ func updateRole(c *gin.Context) {
 	}
 
 	// 调试输出
-	sc.Logger.Info("准备更新字段", zap.Any("updateFields", updateFields))
+	//sc.Logger.Info("准备更新字段", zap.Any("updateFields", updateFields))
 
 	// 使用 map 更新角色数据
 	err = models.DB.Model(&role).Updates(updateFields).Error

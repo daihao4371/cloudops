@@ -205,7 +205,8 @@ func createAccount(c *gin.Context) {
 // updateAccount 用于更新用户信息的函数
 func updateAccount(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
-	// 校验一下 menu字段
+
+	// 解析请求体到 User 对象
 	var reqUser models.User
 	err := c.ShouldBindJSON(&reqUser)
 	if err != nil {
@@ -214,14 +215,11 @@ func updateAccount(c *gin.Context) {
 		return
 	}
 
-	// 在这里校验字段，是否必填，范围是否正确
+	// 校验字段
 	err = validate.Struct(reqUser)
 	if err != nil {
-
-		// 这里为什么要判断错误是否是 ValidationErrors
 		if errors, ok := err.(validator.ValidationErrors); ok {
 			common.ReqBadFailWithWithDetailed(
-
 				gin.H{
 					"翻译前": err.Error(),
 					"翻译后": errors.Translate(trans),
@@ -233,22 +231,19 @@ func updateAccount(c *gin.Context) {
 		}
 		common.ReqBadFailWithMessage(err.Error(), c)
 		return
-
 	}
 
 	sc.Logger.Info("编辑用户请求字段打印", zap.Any("用户", reqUser))
 
-	// 先 去db中根据id找到这个user
-
-	_, err = models.GetUserById(int(reqUser.ID))
+	// 从数据库获取用户信息
+	existingUser, err := models.GetUserById(int(reqUser.ID))
 	if err != nil {
-		sc.Logger.Error("根据id找user错误", zap.Any("菜单", reqUser), zap.Error(err))
+		sc.Logger.Error("根据id找user错误", zap.Any("用户", reqUser), zap.Error(err))
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	// 根据 rolesFront 去db中查询 role ，把role给他关联一下
-
+	// 根据 rolesFront 去数据库中查询角色，并关联到用户
 	reqUser.Roles = make([]*models.Role, 0)
 	for _, roleValue := range reqUser.RolesFront {
 		dbRole, err := models.GetRoleByRoleValue(roleValue)
@@ -259,16 +254,35 @@ func updateAccount(c *gin.Context) {
 		}
 		reqUser.Roles = append(reqUser.Roles, dbRole)
 	}
-	// update 更新这个个体
-	sc.Logger.Info("更新用户打印值", zap.Any("用户", reqUser))
-	err = reqUser.UpdateOne(reqUser.Roles)
+
+	// 准备更新字段，包含空值字段
+	updateFields := map[string]interface{}{
+		"real_name":             reqUser.RealName,
+		"fei_shu_user_id":       reqUser.FeiShuUserId,
+		"account_type":          reqUser.AccountType,
+		"enable":                reqUser.Enable,
+		"service_account_token": reqUser.ServiceAccountToken,
+		"home_path":             reqUser.HomePath,
+		"desc":                  reqUser.Desc, // 确保desc字段被更新，即使它为空
+	}
+
+	// 更新用户信息
+	err = models.DB.Model(&existingUser).Updates(updateFields).Error
 	if err != nil {
-		sc.Logger.Error("更新用户错误", zap.Any("用户", reqUser), zap.Error(err))
+		sc.Logger.Error("更新用户错误", zap.Any("用户", existingUser), zap.Error(err))
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	common.OkWithMessage("创建成功", c)
+	// 更新用户的角色信息
+	err = reqUser.UpdateOne(reqUser.Roles)
+	if err != nil {
+		sc.Logger.Error("更新用户角色失败", zap.Any("用户", reqUser), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	common.OkWithMessage("更新成功", c)
 }
 
 // // getAccountList 函数用于获取用户列表
