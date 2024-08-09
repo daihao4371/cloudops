@@ -39,6 +39,14 @@ func main() {
 	}
 	logger.Info("InitDb success")
 
+	// 初始化数据库
+	err = models.InitCasbin(sc)
+	if err != nil {
+		logger.Error("InitCasbin failed", zap.Error(err))
+		return
+	}
+	logger.Info("InitCasbin success")
+
 	/*	// 同步表结构
 		err = models.MigrateTable()
 		if err != nil {

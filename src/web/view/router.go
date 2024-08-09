@@ -21,7 +21,7 @@ func ConfigRouter(r *gin.Engine) {
 	}
 	// 登录后才能访问的路由
 	afterLoginApiGroup := r.Group("/api")
-	afterLoginApiGroup.Use(middleware.JWTAuthMiddleware())
+	afterLoginApiGroup.Use(middleware.JWTAuthMiddleware()).Use(middleware.CasbinRbacMiddleware())
 	{
 		afterLoginApiGroup.GET("/getUserInfo", getUserInfoAfterLogin)
 		afterLoginApiGroup.GET("/getPermCode", getPermCode)
