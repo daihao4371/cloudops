@@ -12,4 +12,4 @@ mysql -u$user -p$password -h$host -P$prot <<EOF
 CREATE DATABASE IF NOT EXISTS $db DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 EOF
 # 导入数据
-mysql -u$user -p$password -h$host -P$prot $db < /cloudops/sql/init.sql
+mysql -u$user -p$password -h$host -P$prot $db < ./sql/cloudops-init.sql

@@ -16,9 +16,9 @@ import (
 // 设置中间件
 func StartGIn(sc *config.ServerConfig) error {
 	// 初始化引擎
-	// 设置Gin为生产模式
-	// gin.SetMode(gin.ReleaseMode)
-	// gin.SetMode(gin.DebugMode)
+
+	//gin.SetMode(gin.ReleaseMode) // 设置Gin为生产模式
+	gin.SetMode(gin.DebugMode) // 设置Gin为开发模式
 	//r := gin.Default()
 	r := gin.New()
 	r.Use(gin.Recovery())
