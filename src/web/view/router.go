@@ -65,6 +65,7 @@ func ConfigRouter(r *gin.Engine) {
 	{
 		streeApiGroup.GET("/getStreeNodeList", getStreeNodeList)
 		streeApiGroup.POST("/createStreeNode", createStreeNode)
+		streeApiGroup.DELETE("/deleteStreeNode/:id", deleteStreeNode)
 	}
 }
 

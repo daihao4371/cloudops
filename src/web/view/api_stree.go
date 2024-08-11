@@ -4,10 +4,12 @@ import (
 	"cloudops/src/common"
 	"cloudops/src/config"
 	"cloudops/src/models"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type tmpNode struct {
@@ -183,4 +185,108 @@ func createStreeNode(c *gin.Context) {
 		return
 	}
 	common.OkWithMessage("创建成功", c)
+}
+
+// 删除服务树节点
+/*func deleteStreeNode(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	id := c.Param("id")
+	sc.Logger.Info("删除服务树节点", zap.Any("id", id))
+
+	// 获取节点
+	intVar, _ := strconv.Atoi(id)
+	dbNode, err := models.GetStreeNodeById(intVar)
+	if err != nil {
+		sc.Logger.Error("根据ID找树节点错误", zap.Any("树节点", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 删除权限校验
+	pass, err := streeNodeOpsAdminPermissionCheck(dbNode, c)
+	if err != nil {
+		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", dbNode), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	if !pass {
+		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", dbNode), zap.Error(err))
+		common.Req403WithWithMessage("服务树节点权限校验未通过", c)
+	}
+
+	// 根据dbNode的Id去查 pid
+	childrens, _ := models.GetStreeNodeByPid(int(dbNode.ID))
+
+	// 只要dbNode的children不为空，那么就不允许删除
+	if childrens != nil {
+		err = errors.New(fmt.Sprintf("当前节点有子节点，不允许删除 id:%v title:%v", dbNode.ID, dbNode.Title))
+		sc.Logger.Error("不允许删除非叶子节点")
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 删除节点
+	err = dbNode.DeleteOne()
+	if err != nil {
+		sc.Logger.Error("根据id删除树节点错误", zap.Any("id", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithMessage("删除成功", c)
+}*/
+func deleteStreeNode(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	// 校验一下 menu字段
+	id := c.Param("id")
+	sc.Logger.Info("删除树节点", zap.Any("id", id))
+
+	// 先 去db中根据id找到这个对象
+	intVar, _ := strconv.Atoi(id)
+	dbNode, err := models.GetStreeNodeById(intVar)
+	if err != nil {
+		sc.Logger.Error("根据id找树节点错误", zap.Any("树节点", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 在创建节点前要校验权限
+	pass, err := streeNodeOpsAdminPermissionCheck(dbNode, c)
+	if err != nil {
+		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", dbNode), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	if !pass {
+		sc.Logger.Error("服务树节点权限校验未通过", zap.Any("reqNode", dbNode), zap.Error(err))
+		common.Req403WithWithMessage("服务树节点权限校验未通过", c)
+		return
+
+	}
+
+	// 根据dbNode的 Id去查 pid是这个
+
+	childrens, _ := models.GetStreeNodesByPid(int(dbNode.ID))
+
+	// 如果dbNode的children不为空 那么不允许删除
+	if childrens != nil && len(childrens) > 0 {
+		err = errors.New(fmt.Sprintf("不允许删除非叶子节点 id:%v title:%v",
+			id,
+			dbNode.Title,
+		))
+		sc.Logger.Error("不允许删除非叶子节点",
+			zap.Error(err),
+		)
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	err = dbNode.DeleteOne()
+	if err != nil {
+		sc.Logger.Error("根据id删除树节点错误", zap.Any("树节点", id), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	common.OkWithMessage("删除成功", c)
 }

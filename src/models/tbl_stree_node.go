@@ -7,14 +7,17 @@ import (
 )
 
 type StreeNode struct {
-	Model                  // 不用每次写ID 和 createAt了
-	Title     string       `json:"title" gorm:"uniqueIndex:pid_title;type:varchar(50);comment:名称" `
-	Pid       uint         `json:"pId" gorm:"index;uniqueIndex:pid_title;comment:StreeNodeGroups 父级的id 为了给树用的"`
-	Level     int          `json:"level" gorm:"comment:层级"`
-	IsLeaf    bool         `json:"isLeaf" gorm:"comment:是否启用 0=否 1=是"`
-	Desc      string       `json:"desc"  gorm:"comment:描述"`
-	OpsAdmins []*User      `json:"ops_admins" gorm:"many2many:ops_admins;comment:运维负责人列表 可以做运维操作"`
-	Children  []*StreeNode `json:"children" gorm:"-"` // 返回给前端使用
+	Model             // 不用每次写ID 和 createAt了
+	Title     string  `json:"title" gorm:"uniqueIndex:pid_title;type:varchar(50);comment:名称" `
+	Pid       uint    `json:"pId" gorm:"index;uniqueIndex:pid_title;comment:StreeNodeGroups 父级的id 为了给树用的"`
+	Level     int     `json:"level" gorm:"comment:层级"`
+	IsLeaf    bool    `json:"isLeaf" gorm:"comment:是否启用 0=否 1=是"`
+	Desc      string  `json:"desc"  gorm:"comment:描述"`
+	OpsAdmins []*User `json:"ops_admins" gorm:"many2many:ops_admins;comment:运维负责人列表 可以做运维操作"`
+	RdAdmins  []*User `json:"rd_admins" gorm:"many2many:rd_admins;comment:研发负责人列表 可以审批发布单"`          // 多对多
+	RdMembers []*User `json:"rd_members" gorm:"many2many:rd_members;comment:研发工程师列表 可以提发布单 可以操作发布单"` // 多对多
+
+	Children []*StreeNode `json:"children" gorm:"-"` // 返回给前端使用
 
 	Key string `json:"key" gorm:"-"` // 返回给前端表格
 }
@@ -47,13 +50,22 @@ func GetStreeNodeAll() (objs []*StreeNode, err error) {
 
 // 查找服务树节点ID
 func GetStreeNodeById(id int) (*StreeNode, error) {
-	var dbobj StreeNode // 创建对象
-	err := DB.Where("id = ?", id).Preload("BindEcss").Preload("BindElbs").Preload("BindRdss").Preload("OpsAdmins").Preload("RdAdmins").Preload("Preload").First("&dbObj").Error
+	var dbObj StreeNode
+	//err := DB.Where("id = ?", id).Preload("BindEcss").Preload("BindElbs").Preload("BindRdss").Preload("OpsAdmins").Preload("RdAdmins").Preload("RdMembers").First(&dbObj).Error
+	err := DB.Where("id = ?", id).First(&dbObj).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, fmt.Errorf("StreeNode not found")
+			return nil, fmt.Errorf("streeNode不存在")
 		}
-		return nil, fmt.Errorf("数据库错误:%v", err)
+		return nil, fmt.Errorf("数据库错误:%w", err)
 	}
-	return &dbobj, nil
+	return &dbObj, nil
+
+}
+
+// 查找服务树节点Pid
+func GetStreeNodesByPid(pid int) (dbObjs []*StreeNode, err error) {
+	//err = DB.Where("pid = ?", pid).Preload("BindEcss").Preload("BindElbs").Preload("BindRdss").Preload("OpsAdmins").Preload("RdAdmins").Preload("RdMembers").Find(&dbObjs).Error
+	err = DB.Where("pid = ?", pid).Find(&dbObjs).Error
+	return
 }

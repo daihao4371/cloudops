@@ -22,10 +22,10 @@ func InitDb(sc *config.ServerConfig) error {
 		mysql.Open(sc.MySqlC.DSN),
 
 		// gorm 打印sql日志 开发模式使用
-		//&gorm.Config{Logger: logger.Default.LogMode(logger.Info)},
+		&gorm.Config{Logger: logger.Default.LogMode(logger.Info)},
 
 		// gorm 打印sql日志 生产模式使用
-		&gorm.Config{Logger: logger.Default.LogMode(logger.Silent)},
+		//&gorm.Config{Logger: logger.Default.LogMode(logger.Silent)},
 	)
 	if err != nil {
 		return err
