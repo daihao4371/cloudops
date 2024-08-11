@@ -59,6 +59,13 @@ func ConfigRouter(r *gin.Engine) {
 		systemApiGroup.POST("/updateApi", updateApi)
 		systemApiGroup.DELETE("/deleteApi/:id", deleteApi)
 	}
+
+	// 服务树模块
+	streeApiGroup := afterLoginApiGroup.Group("/stree")
+	{
+		streeApiGroup.GET("/getStreeNodeList", getStreeNodeList)
+		streeApiGroup.POST("/createStreeNode", createStreeNode)
+	}
 }
 
 // 测试路由
