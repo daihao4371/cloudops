@@ -10,13 +10,19 @@ import (
 
 // ServerConfig 定义服务器配置结构体
 type ServerConfig struct {
-	HttpAddr   string        `yaml:"http_addr"`    // HTTP 服务器监听地址
-	MySqlC     *mysql.Config `yaml:"mysql"`        // MySQL 配置
-	LogLevel   string        `yaml:"log_level"`    // 日志级别
-	LogPath    string        `yaml:"log_path"`     // 日志文件路径
-	ErrLogPath string        `yaml:"err_log_path"` // 错误日志文件路径
-	JWTC       *JWT          `yaml:"jwt"`          // JWT配置
-	Logger     *zap.Logger   `yaml:"-"`            // 不是配置文件中的字段，而是共用配置文件这个结构体，在生成完logger后设置的
+	HttpAddr    string        `yaml:"http_addr"`    // HTTP 服务器监听地址
+	MySqlC      *mysql.Config `yaml:"mysql"`        // MySQL 配置
+	LogLevel    string        `yaml:"log_level"`    // 日志级别
+	LogPath     string        `yaml:"log_path"`     // 日志文件路径
+	ErrLogPath  string        `yaml:"err_log_path"` // 错误日志文件路径
+	JWTC        *JWT          `yaml:"jwt"`          // JWT配置
+	StreeCacheC *StreeCache   `yaml:"stree_cache"`
+	Logger      *zap.Logger   `yaml:"-"` // 不是配置文件中的字段，而是共用配置文件这个结构体，在生成完logger后设置的
+}
+
+type StreeCache struct {
+	Enable             bool `yaml:"enable"`
+	RunIntervalSeconds int  `yaml:"run_interval_seconds"`
 }
 
 type JWT struct {

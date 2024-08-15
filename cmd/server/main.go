@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cloudops/src/cache"
 	"cloudops/src/common"
 	"cloudops/src/config"
 	"cloudops/src/models"
@@ -54,7 +55,8 @@ func main() {
 			return
 		}
 		logger.Info("MigrateTable success")*/
-
+	// 初始化服务树模块的cache
+	streeC := cache.NewStreeCache(sc)
 	// 启动web服务
-	err = web.StartGIn(sc)
+	err = web.StartGIn(sc, streeC)
 }

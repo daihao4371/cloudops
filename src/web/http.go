@@ -1,6 +1,7 @@
 package web
 
 import (
+	"cloudops/src/cache"
 	"cloudops/src/common"
 	"cloudops/src/config"
 	"cloudops/src/web/middleware"
@@ -14,7 +15,7 @@ import (
 
 // StartGIn 启动gin
 // 设置中间件
-func StartGIn(sc *config.ServerConfig) error {
+func StartGIn(sc *config.ServerConfig, streeC *cache.StreeCache) error {
 	// 初始化引擎
 
 	//gin.SetMode(gin.ReleaseMode) // 设置Gin为生产模式
@@ -27,6 +28,7 @@ func StartGIn(sc *config.ServerConfig) error {
 	varMap := map[string]interface{}{}
 	//varMap[common.GIN_CTX_CONFIG_LOGGER] = sc.Logger
 	varMap[common.GIN_CTX_CONFIG_CONFIG] = sc
+	varMap[common.GIN_CTX_STREE_CACHE] = streeC
 
 	/*	// 添加中间件 打印请求耗时
 		r.Use(middleware.TimeCost())*/

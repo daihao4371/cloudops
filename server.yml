@@ -10,8 +10,14 @@ log_level: DEBUG
 jwt:
   singing_key: cloudops # 密码
   expire_time: 60m  # 有效时间
-  buffer_time: 1m  # 临期时间
+  buffer_time: 5m  # 临期时间
   issuer: cloudops # 签发人
+
+# 服务树缓存配置
+stree_cache:
+  enable: true
+  execTimeoutSeconds: 5
+  run_interval_seconds: 60
 
 #  数据库相关配置和 SQL 语句
 mysql:

@@ -1,6 +1,7 @@
 package view
 
 import (
+	"cloudops/src/cache"
 	"cloudops/src/common"
 	"cloudops/src/config"
 	"cloudops/src/models"
@@ -188,60 +189,12 @@ func createStreeNode(c *gin.Context) {
 }
 
 // 删除服务树节点
-/*func deleteStreeNode(c *gin.Context) {
-	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
-	id := c.Param("id")
-	sc.Logger.Info("删除服务树节点", zap.Any("id", id))
-
-	// 获取节点
-	intVar, _ := strconv.Atoi(id)
-	dbNode, err := models.GetStreeNodeById(intVar)
-	if err != nil {
-		sc.Logger.Error("根据ID找树节点错误", zap.Any("树节点", id), zap.Error(err))
-		common.FailWithMessage(err.Error(), c)
-		return
-	}
-
-	// 删除权限校验
-	pass, err := streeNodeOpsAdminPermissionCheck(dbNode, c)
-	if err != nil {
-		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", dbNode), zap.Error(err))
-		common.FailWithMessage(err.Error(), c)
-		return
-	}
-
-	if !pass {
-		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", dbNode), zap.Error(err))
-		common.Req403WithWithMessage("服务树节点权限校验未通过", c)
-	}
-
-	// 根据dbNode的Id去查 pid
-	childrens, _ := models.GetStreeNodeByPid(int(dbNode.ID))
-
-	// 只要dbNode的children不为空，那么就不允许删除
-	if childrens != nil {
-		err = errors.New(fmt.Sprintf("当前节点有子节点，不允许删除 id:%v title:%v", dbNode.ID, dbNode.Title))
-		sc.Logger.Error("不允许删除非叶子节点")
-		common.FailWithMessage(err.Error(), c)
-		return
-	}
-
-	// 删除节点
-	err = dbNode.DeleteOne()
-	if err != nil {
-		sc.Logger.Error("根据id删除树节点错误", zap.Any("id", id), zap.Error(err))
-		common.FailWithMessage(err.Error(), c)
-		return
-	}
-	common.OkWithMessage("删除成功", c)
-}*/
 func deleteStreeNode(c *gin.Context) {
 	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
-	// 校验一下 menu字段
 	id := c.Param("id")
 	sc.Logger.Info("删除树节点", zap.Any("id", id))
 
-	// 先 去db中根据id找到这个对象
+	// // 获取节点
 	intVar, _ := strconv.Atoi(id)
 	dbNode, err := models.GetStreeNodeById(intVar)
 	if err != nil {
@@ -250,7 +203,7 @@ func deleteStreeNode(c *gin.Context) {
 		return
 	}
 
-	// 在创建节点前要校验权限
+	// 删除权限校验
 	pass, err := streeNodeOpsAdminPermissionCheck(dbNode, c)
 	if err != nil {
 		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", dbNode), zap.Error(err))
@@ -265,8 +218,7 @@ func deleteStreeNode(c *gin.Context) {
 
 	}
 
-	// 根据dbNode的 Id去查 pid是这个
-
+	// // 根据dbNode的Id去查 pid
 	childrens, _ := models.GetStreeNodesByPid(int(dbNode.ID))
 
 	// 如果dbNode的children不为空 那么不允许删除
@@ -281,7 +233,7 @@ func deleteStreeNode(c *gin.Context) {
 		common.FailWithMessage(err.Error(), c)
 		return
 	}
-
+	// 删除节点
 	err = dbNode.DeleteOne()
 	if err != nil {
 		sc.Logger.Error("根据id删除树节点错误", zap.Any("树节点", id), zap.Error(err))
@@ -289,4 +241,183 @@ func deleteStreeNode(c *gin.Context) {
 		return
 	}
 	common.OkWithMessage("删除成功", c)
+}
+
+// 获取所有顶级节点，为了下一轮进行子节点的展开
+func getTopStreeNodes(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	sc.Logger.Info("获取顶级节点前")
+	topNodes, err := models.GetStreeNodeByLevel(1)
+	sc.Logger.Info("获取顶级节点后")
+	if err != nil {
+		sc.Logger.Error("去数据库中拿到所有的顶级服务树节点错误")
+		zap.Error(err)
+		common.ReqBadFailWithMessage(fmt.Sprintf("去数据库中拿到所有的顶级服务树节点错误:%v", err.Error()), c)
+		return
+	}
+
+	// 遍历topNodes，获取其子节点
+	for _, node := range topNodes {
+		node := node
+		node.FillFrontAllDataNew()
+		pass, _ := streeNodeOpsAdminPermissionCheck(node, c)
+		node.CanAdminNode = pass
+	}
+	common.OkWithDetailed(topNodes, "获取成功", c)
+}
+
+// 作用：获取所有顶级节点，为了下一轮进行子节点的展开
+func getTopStreeNodesUseCache(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	sc.Logger.Info("获取顶级节点前")
+	topNodes, err := models.GetStreeNodeByLevel(1)
+	sc.Logger.Info("获取顶级节点后")
+	if err != nil {
+		sc.Logger.Error("去数据库中拿所有的顶级服务树节点错误",
+			zap.Error(err),
+		)
+		common.ReqBadFailWithMessage(fmt.Sprintf("去数据库中拿所有的顶级服务树节点错误:%v", err.Error()), c)
+		return
+	}
+
+	streeC := c.MustGet(common.GIN_CTX_STREE_CACHE).(*cache.StreeCache)
+	for _, node := range topNodes {
+		node := node
+
+		node.FillFrontAllDataWithCache(streeC.StreeNodeCacahe)
+		pass, _ := streeNodeOpsAdminPermissionCheck(node, c)
+		node.CanAdminNode = pass
+	}
+
+	common.OkWithDetailed(topNodes, "ok", c)
+}
+
+// getChildrenStreeNodes 获取子节点
+func getChildrenStreeNodes(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	pid := c.Param("pid")
+	sc.Logger.Info("获取子节点", zap.Any("pid", pid))
+	// 获取子节点
+	streeC := c.MustGet(common.GIN_CTX_STREE_CACHE).(*cache.StreeCache)
+
+	intVar, _ := strconv.Atoi(pid)
+	childrens, err := models.GetStreeNodesByPid(intVar)
+	if err != nil {
+		sc.Logger.Error("根据pid获取子节点错误", zap.Any("pid", pid), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+	for _, node := range childrens {
+		node := node
+		node.FillFrontAllDataWithCache(streeC.StreeNodeCacahe)
+		pass, _ := streeNodeOpsAdminPermissionCheck(node, c)
+		node.CanAdminNode = pass
+	}
+	common.OkWithDetailed(childrens, "获取成功", c)
+}
+
+// 更新服务树节点信息
+// updateStreeNode 更新树节点的函数
+func updateStreeNode(c *gin.Context) {
+	sc := c.MustGet(common.GIN_CTX_CONFIG_CONFIG).(*config.ServerConfig)
+	// 校验字段
+	var reqNode models.StreeNode
+	err := c.ShouldBindJSON(&reqNode)
+	if err != nil {
+		sc.Logger.Error("解析更新服务树节点请求失败", zap.Any("树节点", reqNode), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 校验字段，是否必填，范围是否正确
+	err = validate.Struct(reqNode)
+	if err != nil {
+
+		if errors, ok := err.(validator.ValidationErrors); ok {
+			common.ReqBadFailWithWithDetailed(
+				gin.H{
+					"翻译前": err.Error(),
+					"翻译后": errors.Translate(trans),
+				},
+				"请求出错",
+				c,
+			)
+			return
+		}
+		common.ReqBadFailWithMessage(err.Error(), c)
+		return
+
+	}
+
+	_, err = models.GetStreeNodeById(int(reqNode.ID))
+	if err != nil {
+		sc.Logger.Error("根据id找树节点错误", zap.Any("树节点", reqNode), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	// 在创建节点前要校验权限
+	pass, err := streeNodeOpsAdminPermissionCheck(&reqNode, c)
+	if err != nil {
+		sc.Logger.Error("服务树节点权限校验失败", zap.Any("reqNode", &reqNode), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	if !pass {
+		sc.Logger.Error("服务树节点权限校验未通过", zap.Any("reqNode", &reqNode), zap.Error(err))
+		common.Req403WithWithMessage("服务树节点权限校验未通过", c)
+		return
+
+	}
+
+	usersOpsAdmin := make([]*models.User, 0)
+	usersRdAdmin := make([]*models.User, 0)
+	usersRdMember := make([]*models.User, 0)
+	// 遍历角色menu 列表 找到角色
+	for _, userName := range reqNode.OpsAdminUsers {
+		dbUser, err := models.GetUserByUserName(userName)
+		if err != nil {
+			sc.Logger.Error("树节点根据userName找用户错误", zap.Any("树节点", reqNode), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+		usersOpsAdmin = append(usersOpsAdmin, dbUser)
+
+	}
+	for _, userName := range reqNode.RdAdminUsers {
+		dbUser, err := models.GetUserByUserName(userName)
+		if err != nil {
+			sc.Logger.Error("树节点根据userName找用户错误", zap.Any("树节点", reqNode), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+		usersRdAdmin = append(usersRdAdmin, dbUser)
+
+	}
+	for _, userName := range reqNode.RdMemberUsers {
+		dbUser, err := models.GetUserByUserName(userName)
+		if err != nil {
+			sc.Logger.Error("树节点根据userName找用户错误", zap.Any("树节点", reqNode), zap.Error(err))
+			common.FailWithMessage(err.Error(), c)
+			return
+		}
+		usersRdMember = append(usersRdMember, dbUser)
+
+	}
+
+	// 将运维负责人设置，即使是空的也要设置：
+	// 原来非空，现在为空 代表删除人员了
+	reqNode.OpsAdmins = usersOpsAdmin
+	reqNode.RdAdmins = usersRdAdmin
+	reqNode.RdMembers = usersRdMember
+	err = reqNode.UpdateStreeNode()
+	if err != nil {
+		sc.Logger.Error("更新树节点和关联的运维负责人错误", zap.Any("树节点", reqNode), zap.Error(err))
+		common.FailWithMessage(err.Error(), c)
+		return
+	}
+
+	common.OkWithMessage("更新成功", c)
+	sc.Logger.Info("更新树节点和关联的运维负责人成功", zap.Any("树节点", reqNode))
 }

@@ -18,6 +18,7 @@ const (
 
 	COMMON_STATUS_ENABLE  = "1"
 	COMMON_STATUS_DISABLE = "0"
+	GIN_CTX_STREE_CACHE   = "stree_cache"
 )
 
 var (

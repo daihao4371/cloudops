@@ -18,12 +18,15 @@ type User struct {
 	Mobile       string `json:"mobile" gorm:"comment:手机号"`
 	FeiShuUserId string `json:"feiShuUserId" gorm:"comment:飞书userid  获取方式请看 https://open.feishu.cn/document/home/user-identity-introduction/open-id"`
 	// 添加一些字段 用来支持服务账号
-	AccountType         int      `json:"accountType" gorm:"default:1;comment:用户是否是服务账号 1普通用户 2服务账号"`
-	ServiceAccountToken string   `json:"serviceAccountToken"`
-	HomePath            string   `json:"homePath" gorm:"comment:登陆后的默认首页"`
-	Enable              int      `json:"enable" gorm:"default:1;comment:用户是否被冻结 1正常 2冻结"` //用户是否被冻结 1正常 2冻结
-	Roles               []*Role  `json:"roles" gorm:"many2many:user_roles;"`              // 多对多
-	RolesFront          []string `json:"rolesFront" gorm:"-"`                             // 给前端用的中间字段
+	AccountType         int          `json:"accountType" gorm:"default:1;comment:用户是否是服务账号 1普通用户 2服务账号"`
+	ServiceAccountToken string       `json:"serviceAccountToken"`
+	HomePath            string       `json:"homePath" gorm:"comment:登陆后的默认首页"`
+	Enable              int          `json:"enable" gorm:"default:1;comment:用户是否被冻结 1正常 2冻结"` //用户是否被冻结 1正常 2冻结
+	Roles               []*Role      `json:"roles" gorm:"many2many:user_roles;"`              // 多对多
+	OpsNodes            []*StreeNode `json:"ops_nodes" gorm:"many2many:ops_admins;"`          // 多对多
+	RdAdminNodes        []*StreeNode `json:"rd_admin_nodes" gorm:"many2many:rd_admins;"`      // 多对多
+	RdMemberNodes       []*StreeNode `json:"rd_member_nodes" gorm:"many2many:rd_members;"`    // 多对多
+	RolesFront          []string     `json:"rolesFront" gorm:"-"`                             // 给前端用的中间字段
 }
 
 // CheckUserPassword 验证用户登录密码
@@ -57,6 +60,19 @@ func GetUserByUserName(userName string) (*User, error) {
 			return nil, fmt.Errorf("用户名不存在")
 		}
 		return nil, fmt.Errorf("数据库错误:%w", err)
+	}
+	return &dbUser, nil
+}
+
+// GetUserByRealName 根据用户花名名查询用户
+func GetUserByRealName(realName string) (*User, error) {
+	var dbUser User
+	err := DB.Where("real_name = ?", realName).Preload("Roles").First(&dbUser).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("用户不存在")
+		}
+		return nil, fmt.Errorf("数据库错误: %w", err)
 	}
 	return &dbUser, nil
 }
@@ -123,7 +139,6 @@ func GetUserByName(name string) (*User, error) {
 		return nil, fmt.Errorf("数据库错误:%w", err)
 	}
 	return &dbUser, nil
-
 }
 
 // 删除用户
